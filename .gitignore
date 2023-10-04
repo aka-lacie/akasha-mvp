@@ -33,3 +33,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# supabase (until I figure out what to do with it)
+/supabase
+/akasha-mvp.code-workspace
