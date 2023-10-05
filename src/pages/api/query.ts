@@ -2,19 +2,19 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import axios from 'axios';
 import { OpenAI } from 'openai';
-// import { supabaseClient } from './lib/supabase'
 
 // MODELS
 const EMBEDDING_MODEL = 'text-embedding-ada-002'
 const GPT_MODEL = 'gpt-3.5-turbo-16k'
 
 // CONFIG
-// const OPENAI_API_KEY = process.env["OPENAI_API_KEY"] || ''
 const openai = new OpenAI()
 
 const supabase_url = process.env["AKASHA_SUPABASE_URL"] || ''
 const supabase_key = process.env["AKASHA_SUPABASE_KEY"] || ''
 const supabaseClient : SupabaseClient = createClient(supabase_url, supabase_key)
+
+const TESTMODE = true; // Doesn't make API calls in test mode
 
 console.log("Hello from Query API!")
 
@@ -114,7 +114,7 @@ const queryMessage = async (
   _tokenBudget: number
 ): Promise<string> => {
   const stringsAndRelatednesses = relatedText || await getRelatedTextFromSupabase(query);
-  
+
   // TODO: doesn't seem like the examples help much
   let message = 'Use the data provided by the Irminsul to answer the given question. Answer in two parts labeled "Brainstorm" and "Answer". Note any info you read in the data relevant to the question in "Brainstorm". Write your conclusion and justification in "Answer". If you cannot determine any answer, write "The answer was not found within the Irminsul." Some examples: \
   1. Relevant Question: "What happened in Scaramouche\'s past?" \
@@ -208,7 +208,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Content-Encoding', 'none')
 
-    // const { query } = req.body;
     const query = req.query.query as string;
     if (!query) {
       throw new Error('No query provided.');
@@ -216,28 +215,31 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     console.log("Got request.")
 
     console.log("Searching Irminsul for: " + query)
-    const searchData = await getRelatedTextFromSupabase(query);
+    const searchData = TESTMODE ?
+      [] :
+      await getRelatedTextFromSupabase(query);
 
     console.log("Received search data. Processing...")
-    const snippets = generateSnippetsFromRelatedText(searchData);
-
-    // Test data
-    // const snippets = ['testSnippet1', 'testSnippet2', 'testSnippet3', 'testSnippet4', 'testSnippet5', 'testSnippet6', 'testSnippet7', 'testSnippet8', 'testSnippet9', 'testSnippet10'];
+    const snippets = TESTMODE ?
+      ['testSnippet1', 'testSnippet2', 'testSnippet3', 'testSnippet4', 'testSnippet5', 'testSnippet6', 'testSnippet7', 'testSnippet8', 'testSnippet9', 'testSnippet10'] :
+      generateSnippetsFromRelatedText(searchData);
 
     console.log("Sending preliminary data...")
     res.write(`data: ${JSON.stringify({ type: 'snippets', data: snippets })}\n\n`);
 
     console.log("Constructing answer...")
-    const response = await ask(query, searchData);
+    // if TESTMODE, sleep for 3 seconds to simulate API call
+    if (TESTMODE) {
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+    const response = TESTMODE ? 
+      'Brainstorm: - testBrainstorm1 - testBrainstorm2 - testBrainstorm3\nAnswer: testAnswer' :
+      await ask(query, searchData);
 
     console.log(response);
     console.log("Received response! Processing...");
     const brainstormAndAnswer = parseResponse(response);
     const brainstormArray = parseBrainstorm(brainstormAndAnswer[0]);
-
-    // Test data
-    // const brainstormArray = ['testBrainstorm1', 'testBrainstorm2', 'testBrainstorm3', 'testBrainstorm4', 'testBrainstorm5', 'testBrainstorm6', 'testBrainstorm7', 'testBrainstorm8', 'testBrainstorm9', 'testBrainstorm10'];
-    // const brainstormAndAnswer = ['testBrainstormArray', 'testAnswer'];
 
     res.write(`data: ${JSON.stringify({ 
       type: 'response',
