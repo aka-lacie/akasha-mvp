@@ -27,12 +27,13 @@ const ReconstructingText: React.FC<ReconstructingTextProps> = ({ targetString })
 };
 
 const generateRandomString = (l: number) => {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
   return Array.from({ length: l }).map(() => characters[Math.floor(Math.random() * characters.length)]).join('');
 };
   
 const updateMask = (mask: boolean[]) => {
-  const numIndicesToUpdate = Math.floor(Math.random() * 3) + 1;
+  const max_num = Math.floor(mask.length / 10);
+  const numIndicesToUpdate = Math.floor(Math.random() * max_num) + 1;
   for (let i = 0; i < numIndicesToUpdate; ++i) {
     const randomIndex = Math.floor(Math.random() * mask.length);
     if (!mask[randomIndex]) {

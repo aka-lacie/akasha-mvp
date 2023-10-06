@@ -15,6 +15,23 @@ const supabase_key = process.env["AKASHA_SUPABASE_KEY"] || ''
 const supabaseClient : SupabaseClient = createClient(supabase_url, supabase_key)
 
 const TESTMODE = true; // Doesn't make API calls in test mode
+const testLoremIpsum: string[] = [
+  "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+  "Id donec ultrices tincidunt arcu non sodales neque sodales ut.",
+  "Nulla posuere sollicitudin aliquam ultrices sagittis orci a. Mauris pharetra et ultrices neque ornare aenean euismod elementum nisi.",
+  "Mauris pharetra et ultrices neque ornare aenean euismod elementum nisi.",
+  "Mauris nunc congue nisi vitae suscipit tellus mauris.",
+  "Imperdiet proin fermentum leo vel orci porta non.",
+  "Odio euismod lacinia at quis risus sed.",
+  "Iaculis at erat pellentesque adipiscing.",
+  "Volutpat lacus laoreet non curabitur gravida.",
+  "Elementum nibh tellus molestie nunc non blandit.",
+  "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+  "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+  "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+]
+const testResponse: string = `Brainstorm:\n- Celestia is a place that floats in the sky and is said to be where the gods reside.\n- It is not mentioned in the provided data where Celestia came from.\n- Celestia is associated with the gods and is the place where humans may ascend if they obtain godhood.\n- The envoys of the gods walked among humanity in ancient times when life was weak and the earth was covered in unending ice.\n- Celestia is depicted as a floating island comprised of several landmasses with a central rock and smaller satellites.\n- The architecture of Celestia appears to have signs of disrepair and wear.\n- The central mass of Celestia descends deep below the surface level with a distinct inverted dome peeking out from the bottom.\n- Celestia is connected to the ley lines in the earth through the white Irminsul trees.\n\nAnswer:\nBased on the provided data, it is not explicitly stated where Celestia came from. However, Celestia is described as a place that floats in the sky and is associated with the gods. It is depicted as a floating island comprised of several landmasses with a central rock and smaller satellites. The architecture of Celestia shows signs of disrepair and wear. In ancient times, the envoys of the gods walked among humanity when life was weak and the earth was covered in unending ice. Celestia is also connected to the ley lines in the earth through the white Irminsul trees. Therefore, while the origin of Celestia is not directly mentioned, it can be inferred that it is a celestial realm where the gods reside and is closely connected to the earth and its history.`;
 
 console.log("Hello from Query API!")
 
@@ -221,19 +238,19 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
     console.log("Received search data. Processing...")
     const snippets = TESTMODE ?
-      ['testSnippet1', 'testSnippet2', 'testSnippet3', 'testSnippet4', 'testSnippet5', 'testSnippet6', 'testSnippet7', 'testSnippet8', 'testSnippet9', 'testSnippet10'] :
+      testLoremIpsum :
       generateSnippetsFromRelatedText(searchData);
 
     console.log("Sending preliminary data...")
     res.write(`data: ${JSON.stringify({ type: 'snippets', data: snippets })}\n\n`);
 
     console.log("Constructing answer...")
-    // if TESTMODE, sleep for 3 seconds to simulate API call
+    // if TESTMODE, sleep for some seconds to simulate API call
     if (TESTMODE) {
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise(resolve => setTimeout(resolve, 5000));
     }
     const response = TESTMODE ? 
-      'Brainstorm: - testBrainstorm1 - testBrainstorm2 - testBrainstorm3\nAnswer: testAnswer' :
+      testResponse :
       await ask(query, searchData);
 
     console.log(response);

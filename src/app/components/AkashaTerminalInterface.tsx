@@ -14,6 +14,7 @@ const AkashaTerminalInterface: React.FC = () => {
   const [data, setData] = useState<DataCloudInputType>({ type: '', info: [] });
   const [answer, setAnswer] = useState<string>('');
   const [queryBarIsUp, setQueryBarIsUp] = useState(false);
+  const [answerIsReady, setAnswerIsReady] = useState(false);
 
   const handleQuery = (query: string) => {
     if (!query) {
@@ -24,6 +25,7 @@ const AkashaTerminalInterface: React.FC = () => {
     setQueryBarIsUp(true); // once this is set, the query bar stays up until AkashaTerminalInferface is unmounted
     setData({ type: '', info: [] });
     setAnswer('');
+    setAnswerIsReady(false);
 
     const eventSource = new EventSource(`/api/query?query=${encodeURIComponent(query)}`);
 
@@ -52,23 +54,22 @@ const AkashaTerminalInterface: React.FC = () => {
   };
 
   return (
-    <div className="transition-all ease-in-out duration-500">
-      <div className={`${queryBarIsUp ? 'mt-8' : 'mt-30'} transition-all ease-in-out duration-500`}>
+    <div className={`flex flex-col ${queryBarIsUp ? 'justify-between' : 'justify-center'} h-[75vh] w-[60vw] transition-all ease-in-out duration-500`}>
+      <div className={`z-20 transition-all ease-in-out duration-500`}>
         <QueryBar handleQuery={handleQuery} />
       </div>
       {(data.info.length > 0) && (
-        <div className="transition-opacity ease-in-out duration-500 opacity-0 appear opacity-100">
-          <DataWordCloud data={data} />
+        <div className="relative h-full w-full transition-opacity ease-in-out duration-500 opacity-0 appear opacity-100">
+          <DataWordCloud data={data} setAnswerIsReady={setAnswerIsReady} />
         </div>
       )}
-      {answer && (
-        <div className="transition-opacity ease-in-out duration-500 opacity-0 appear opacity-100">
+      {answerIsReady && (
+        <div className="z-20 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-opacity ease-in-out duration-500 opacity-0 appear opacity-100">
           <AkashaResponse answer={answer} />
         </div>
       )}
     </div>
   );
 };
-
 
 export default AkashaTerminalInterface;
