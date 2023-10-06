@@ -44,7 +44,7 @@ const QueryBar: React.FC<QueryBarProps> = ({ handleQuery }) => {
         />
         <button
           type="submit"
-          className={`py-2 px-4 rounded-r-full drop-shadow text-white ${isQueryEmpty ? 'bg-green-300 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} transition-all ease-in-out duration-300 ${isExpanded ? 'w-16' : 'w-12'}`}
+          className={`py-2 px-4 rounded-r-full drop-shadow text-white ${isQueryEmpty ? 'bg-green-300 dark:bg-green-400 dark:saturate-50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} transition-all ease-in-out duration-300 ${isExpanded ? 'w-16' : 'w-12'}`}
           disabled={isQueryEmpty}
         >
           <i className="fas fa-search"></i>

@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import ReconstructingText from './ReconstructingText';
 
 interface AkashaResponseProps {
   answer: string;
@@ -6,8 +6,11 @@ interface AkashaResponseProps {
 
 const AkashaResponse: React.FC<AkashaResponseProps> = ({ answer }) => {
   return (
-    <div>
-      <p>{answer || 'Response goes here.'}</p>
+    <div className='relative answerBubbleOpen overflow-hidden'>
+      <div className="relative text-sm text-center">
+        {/* <ReconstructingText targetString={answer} /> */}
+        <span>{answer}</span>
+      </div>
     </div>
   );
 };
