@@ -14,6 +14,19 @@ const supabase_url = process.env["AKASHA_SUPABASE_URL"] || ''
 const supabase_key = process.env["AKASHA_SUPABASE_KEY"] || ''
 const supabaseClient : SupabaseClient = createClient(supabase_url, supabase_key)
 
+const systemPrompt = 'You are the Akasha Terminal, a smart database able to access the collective knowledge of Teyvat stored in the Irminsul. You do not answer questions outside of the scope of Genshin Impact.'
+const initialPrompt = `
+  Use the data provided by the Irminsul to answer the given question. Answer in two parts labeled "Brainstorm" and "Answer". Note any info you read in the data relevant to the question in "Brainstorm". Write your conclusion and brief justification in "Answer", but keep it concise - every word counts. If you cannot determine any answer, write "The answer was not found within the Irminsul." Some examples: \
+  1. Relevant Question: "What happened in Scaramouche\'s past?" \
+  GPT Response: """Brainstorm: - Scaramouche was originally created as a test puppet body by Ei. - He settled in Tatarasuna and became close with Katsuragi. - Dottore infiltrated Tatarasuna and caused chaos with Crystal Marrow. -...[rest of brainstorm] Answer: Scaramouche was created as a test puppet body by Ei. He settled in Tatarasuna and formed a close relationship with Katsuragi. However, chaos ensued...[rest of answer]""" \
+  2. Relevant but Unanswerable Question: "Where did Celestia come from?" \
+  """Brainstorm: - Celestia is a place that floats in the sky and is said to be where the gods reside. - It is not mentioned in the provided data where Celestia came from. - Celestia is associated with the gods and is the place where humans may ascend if they obtain godhood...[rest of brainstorm] Answer: It is not clear where Celestia came from. However, Celestia is described as a place that floats in the sky and is associated with the gods. It is depicted as a floating island...[rest of answer]"""
+`
+// 3. Irrelevant Question: "What is the best car to buy right now?" \
+// """"Brainstorm: [irrelevant data] Answer: This knowledge is beyond my reach. The answer was not found within the Irminsul.""" \
+// 4. Meta Question: "Who/What are you?" \
+// """Brainstorm: [irrelevant data] Answer: I am the Akasha Terminal, a knowledge interface connected to the collective data repository of the Irminsul."""'
+
 const TESTMODE = true; // Doesn't make API calls in test mode
 const testLoremIpsum: string[] = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
@@ -132,16 +145,7 @@ const queryMessage = async (
 ): Promise<string> => {
   const stringsAndRelatednesses = relatedText || await getRelatedTextFromSupabase(query);
 
-  // TODO: doesn't seem like the examples help much
-  let message = 'Use the data provided by the Irminsul to answer the given question. Answer in two parts labeled "Brainstorm" and "Answer". Note any info you read in the data relevant to the question in "Brainstorm". Write your conclusion and justification in "Answer". If you cannot determine any answer, write "The answer was not found within the Irminsul." Some examples: \
-  1. Relevant Question: "What happened in Scaramouche\'s past?" \
-  GPT Response: """Brainstorm: - Scaramouche was originally created as a test puppet body by Ei. - He settled in Tatarasuna and became close with Katsuragi. - Dottore infiltrated Tatarasuna and caused chaos with Crystal Marrow. -...[rest of brainstorm] Answer: Scaramouche was created as a test puppet body by Ei. He settled in Tatarasuna and formed a close relationship with Katsuragi. However, chaos ensued...[rest of answer]""" \
-  2. Relevant but Unanswerable Question: "Where did Celestia come from?" \
-  """Brainstorm: - Celestia is a place that floats in the sky and is said to be where the gods reside. - It is not mentioned in the provided data where Celestia came from. - Celestia is associated with the gods and is the place where humans may ascend if they obtain godhood...[rest of brainstorm] Answer: It is not clear where Celestia came from. However, Celestia is described as a place that floats in the sky and is associated with the gods. It is depicted as a floating island...[rest of answer]""" \
-  3. Irrelevant Question: "What is the best car to buy right now?" \
-  """"Brainstorm: [irrelevant data] Answer: This knowledge is beyond my reach. The answer was not found within the Irminsul.""" \
-  4. Meta Question: "Who/What are you?" \
-  """Brainstorm: [irrelevant data] Answer: I am the Akasha Terminal, a knowledge interface connected to the collective data repository of the Irminsul."""';
+  let message = initialPrompt;
 
   message += '\n\nIrminsul data:';
   for (const [string, _relatedness] of stringsAndRelatednesses) {
@@ -172,7 +176,7 @@ const ask = async (
     const messages: { role: "system" | "user"; content: string }[]= [
       {
         role: 'system',
-        content: 'You are the Akasha Terminal, a smart database able to access the collective knowledge of Teyvat stored in the Irminsul. You do not answer questions outside of the scope of Genshin Impact.'
+        content: systemPrompt,
       },
       {
         role: 'user',
@@ -212,7 +216,7 @@ const parseResponse = (response: string): string[] => {
  * @returns An array of trimmed non-empty lines.
  */
 const parseBrainstorm = (brainstorm: string): string[] => {
-  return brainstorm.split('-').map((line) => line.trim()).filter((line) => line !== '');
+  return brainstorm.split('- ').map((line) => line.trim()).filter((line) => line !== '');
 }
 
 // ============================================================

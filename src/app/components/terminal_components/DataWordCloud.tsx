@@ -1,17 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ReconstructingText from './ReconstructingText';
 
-interface DataWordCloudProps {
-  data: { 
-    type: 'snippets' | 'brainstorm' | '',
-    info: string[],
-  },
-
-  setAnswerIsReady: React.Dispatch<React.SetStateAction<boolean>>,
-}
-
-interface Position { x: number, y: number }
-
 const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady }) => {
   const [snippets, setSnippets] = useState<string[]>([]);
   const [activeSnippetsIndices, setActiveSnippetsIndices] = useState<number[]>([]);
@@ -21,6 +10,7 @@ const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady })
   const [brainstorm, setBrainstorm] = useState<string[]>([]);
   const [activeBrainstormIndices, setActiveBrainstormIndices] = useState<number[]>([]);
   const [brainstormPositions, setBrainstormPositions] = useState<Position[]>([]);
+  const [startBrainstormCollapse, setStartBrainstormCollapse] = useState<boolean>(false);
 
   useEffect(() => {
     // Ignore data if it's already been set
@@ -111,25 +101,26 @@ const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady })
 
     if (newIndex === brainstorm.length - 1) {
       setTimeout(() => {
-        setAnswerIsReady(true);
-        console.log('Answer is ready.');
+        setStartBrainstormCollapse(true);
       }, 5000);
+
+      // setTimeout(() => {
+      //   setAnswerIsReady(true);
+      // }, 6000);
     }
-  }, [activeBrainstormIndices]);  
+  }, [activeBrainstormIndices]);
 
   return (
-    <div className="h-full w-full" style={{ '--animation-duration' : '3s' } as React.CSSProperties}>
+    <div className={`relative h-full w-full text-white ${startBrainstormCollapse && 'brainstormCollapse'}`} style={{ '--animation-duration' : '3s' } as React.CSSProperties}>
       {activeSnippetsIndices.map(index => (
         <div
           key={index}
-          className={`absolute text-xs`}
+          className={`absolute left-1/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs`}
           style={{
-            left: '50%',
-            top: '50%',
             '--animation-duration': '3s',
             transition: `all var(--animation-duration) ease-in`,
             // For initial positioning and moving
-            transform: `translate(-50%, -50%) translate(${snippetsPositions[index].x}px, ${snippetsPositions[index].y}px)`
+            transform: `translate(${snippetsPositions[index].x}px, ${snippetsPositions[index].y}px)`
           } as React.CSSProperties}
         >
           <div className="relative growDisappear">
@@ -140,13 +131,11 @@ const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady })
       {activeBrainstormIndices.map(index => (
         <div
           key={index}
-          className={`absolute text-xs`}
+          className={`absolute left-1/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs`}
           style={{
-            left: '50%',
-            top: '50%',
             '--animation-duration': '3s',
             transition: `all var(--animation-duration) ease-in`,
-            transform: `translate(-50%, -50%) translate(${brainstormPositions[index].x}px, ${brainstormPositions[index].y}px)`
+            transform: `translate(${brainstormPositions[index].x}px, ${brainstormPositions[index].y}px)`
           } as React.CSSProperties}
         >
           <div className="relative growAndTurnGreen">

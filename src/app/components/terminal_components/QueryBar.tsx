@@ -1,17 +1,13 @@
 import { useState } from 'react';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
-interface QueryBarProps {
-  handleQuery: (query: string) => void;
-}
-
-const QueryBar: React.FC<QueryBarProps> = ({ handleQuery }) => {
+const QueryBar: React.FC<QueryBarProps> = ({ handleQuery, acceptingInput }) => {
   const [query, setQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (query.trim()) {
+    if (!isQueryEmpty && acceptingInput) {
       handleQuery(query);
     }
   };
@@ -24,9 +20,8 @@ const QueryBar: React.FC<QueryBarProps> = ({ handleQuery }) => {
     setIsFocused(false);
   };
 
-  const isExpanded = isFocused || query.trim();
-
   const isQueryEmpty = !query.trim();
+  const isExpanded = isFocused || !isQueryEmpty;
 
   return (
     <div className={`flex justify-center`}>
@@ -35,7 +30,7 @@ const QueryBar: React.FC<QueryBarProps> = ({ handleQuery }) => {
         className="flex rounded-full overflow-hidden transition-all"
       >
         <input
-          className={`flex-grow py-2 px-4 rounded-l-full text-black dark:text-white focus:outline-none bg-white dark:bg-gray-700 transition-all ease-in-out duration-300 ${isExpanded ? 'w-96' : 'w-64'}`}
+          className={`flex-grow py-2 px-4 rounded-l-full text-black dark:text-white focus:outline-none bg-white dark:bg-gray-700 transition-all ease-in-out duration-300 w-64 ${isExpanded && 'md:w-96'}`}
           type="text"
           placeholder="Search the Irminsul..."
           onFocus={handleFocus}
@@ -44,7 +39,7 @@ const QueryBar: React.FC<QueryBarProps> = ({ handleQuery }) => {
         />
         <button
           type="submit"
-          className={`py-2 px-4 rounded-r-full drop-shadow text-white ${isQueryEmpty ? 'bg-green-300 dark:bg-green-400 dark:saturate-50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} transition-all ease-in-out duration-300 ${isExpanded ? 'w-16' : 'w-12'}`}
+          className={`py-2 px-4 rounded-r-full min-w-[40px] drop-shadow text-white ${(isQueryEmpty || !acceptingInput) ? 'bg-green-300 dark:bg-green-400 dark:saturate-50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} transition-all ease-in-out duration-300 w-12 ${isExpanded && 'md:w-16'}`}
           disabled={isQueryEmpty}
         >
           <i className="fas fa-search"></i>
