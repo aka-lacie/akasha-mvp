@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-interface ReconstructingTextProps {
-  targetString: string;
-}
-
 const ReconstructingText: React.FC<ReconstructingTextProps> = ({ targetString }) => {
   const [currentString, setCurrentString] = useState<string>(generateRandomString(targetString.length));
   const [booleanMask, setBooleanMask] = useState<boolean[]>(Array(targetString.length).fill(false));
