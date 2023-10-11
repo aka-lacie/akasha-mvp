@@ -104,10 +104,11 @@ body {
     transform: scale(1);
   }
   100% {
-    transform: scale(.1);
     background: radial-gradient(circle at center, white 0%, transparent 70%);
   }
 }
+
+
 
 /* AkashaResponse */
 .answerBubbleOpen {

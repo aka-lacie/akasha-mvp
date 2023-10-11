@@ -8,6 +8,7 @@ const statusMessages = {
   done: 'Done.',
   error: 'An ERROR has occurred. Please try a new query.',
 }
+
 const StatusBar: React.FC<StatusBarProps> = ({ status }) => {
   return (
     <div className="font-mono after:content-[''] after:w-[1rem] after:h-[2rem] background-inherit inline-block">
