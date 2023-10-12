@@ -3,7 +3,7 @@ import ReconstructingText from './ReconstructingText';
 import CloudBlob from './CloudBlob';
 import CollapseStar from './CollapseStar';
 
-const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady }) => {
+const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady, setQueryStatus }) => {
   const [snippets, setSnippets] = useState<string[]>([]);
   const [activeSnippetsIndices, setActiveSnippetsIndices] = useState<number[]>([]);
   const [shuffledSnippetsIndices, setShuffledSnippetsIndices] = useState<number[]>([]);
@@ -85,6 +85,7 @@ const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady })
 
   useEffect(() => {
     if (activeBrainstormIndices.length === 0) return;
+    // if (activeBrainstormIndices.length === 1) setQueryStatus('receivedData');
   
     const newIndex = activeBrainstormIndices[activeBrainstormIndices.length - 1];
 
@@ -102,6 +103,8 @@ const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady })
     });
 
     if (newIndex === brainstorm.length - 1) {
+      setQueryStatus('thinking');
+
       setTimeout(() => {
         setStartBrainstormCollapse(true);
       }, 5000);
@@ -115,6 +118,7 @@ const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady })
 
     setTimeout(() => {
       setAnswerIsReady(true);
+      setQueryStatus('constructingAnswer');
     }, 2500);
   }, [startBrainstormCollapse]);
 

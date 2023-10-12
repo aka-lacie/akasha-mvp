@@ -3,10 +3,10 @@ interface QueryBarProps {
   acceptingInput: boolean;
 }
 
-type statusCodes = 'receivedQuery' | 'searchingDatabase' | 'receivedData' | 'thinking' | 'done' | 'error' | '';
+type statusCode = 'receivedQuery' | 'searchingDatabase' | 'receivedData' | 'thinking' | 'constructingAnswer' | 'done' | 'error' | '';
 
 interface StatusBarProps {
-  status: statusCodes;
+  status: statusCode;
 }
 
 interface DataWordCloudProps {
@@ -16,6 +16,7 @@ interface DataWordCloudProps {
   },
 
   setAnswerIsReady: React.Dispatch<React.SetStateAction<boolean>>,
+  setQueryStatus: React.Dispatch<React.SetStateAction<statusCode>>,
 }
 
 interface Position { x: number, y: number }
