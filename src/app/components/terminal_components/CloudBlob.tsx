@@ -5,7 +5,7 @@ import './CloudBlob.css';
 
 const CloudBlob = () => {
   return (
-    <div className="cloud-filter">
+    <>
       <div className="glow"></div>
       <div className="particles">
           <div className="rotate">
@@ -41,7 +41,7 @@ const CloudBlob = () => {
               </div>
           </div>
       </div>
-    </div>
+    </>
   );
 };
 

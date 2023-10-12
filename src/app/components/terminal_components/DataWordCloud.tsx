@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReconstructingText from './ReconstructingText';
 import CloudBlob from './CloudBlob';
+import CollapseStar from './CollapseStar';
 
 const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady }) => {
   const [snippets, setSnippets] = useState<string[]>([]);
@@ -104,20 +105,25 @@ const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady })
       setTimeout(() => {
         setStartBrainstormCollapse(true);
       }, 5000);
-
-      // setTimeout(() => {
-      //   setAnswerIsReady(true);
-      // }, 6000);
     }
   }, [activeBrainstormIndices]);
 
   useEffect(() => {
+    if (!startBrainstormCollapse) return;
+
     setBrainstormPositions(brainstormPositions.map(() => ({ x: 0, y: 0 })));
+
+    setTimeout(() => {
+      setAnswerIsReady(true);
+    }, 2500);
   }, [startBrainstormCollapse]);
 
   return (
     <div className={`relative h-full w-full text-white`}>
-      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+
+      {/* <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-500 w-4 h-4 rounded-full"></div> */}
+
+      <div className={`absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-opacity duration-1000 ${startBrainstormCollapse && "opacity-0"}`}>
         <CloudBlob />
       </div>
 
@@ -152,9 +158,9 @@ const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady })
         </div>
       ))}
 
-      {/* <div className={`${startBrainstormCollapse ? 'opacity-100' : 'opacity-0'} transition-opacity duration-[2s]`}>
-        <div className={`absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white w-4 h-4 rounded-full animate-pulse`}></div>
-      </div> */}
+      <div className={`absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2`}>
+        <CollapseStar startCollapse={startBrainstormCollapse}/>
+      </div>
     </div>
   );
 };

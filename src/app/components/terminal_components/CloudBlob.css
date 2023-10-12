@@ -2,12 +2,36 @@
   background: #000;
 } */
 
-.cloud-filter {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  filter: hue-rotate(-75deg);
-  scale: 2;
+:root {
+  --scale-factor: 1;  /* sm */
+  --cloud-primary-color: #c1ecb0;
+  --cloud-secondary-color: #7cff99;
+  --particle-color-1: #00e83e;
+  --particle-color-2: #26ff2d;
+  --particle-color-3: #26ff3f;
+  --particle-color-4: #52ff6f;
+  --particle-color-5: #48e870;
+  --particle-color-6: #71e8a9;
+  --glow-opacity: .6;
+  --particle-size: 10px;
+}
+
+.dark {
+  --glow-opacity: .5;
+  --cloud-primary-color: #a9d199;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --scale-factor: 3;  /* md */
+    --particle-size: 15px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --scale-factor: 6;  /* lg */
+  }
 }
 
 .glow {
@@ -16,6 +40,22 @@
   left: 50%;
   border-radius: 50%;
   animation: glow 3s linear 0s infinite alternate;
+  opacity: var(--glow-opacity);
+}
+
+@keyframes glow {
+  0% {
+    transform: rotate(0deg);
+    box-shadow: 0 0 calc(60px * var(--scale-factor)) calc(30px * var(--scale-factor)) var(--cloud-primary-color),
+                calc(25px * var(--scale-factor)) calc(15px * var(--scale-factor)) calc(50px * var(--scale-factor)) calc(15px * var(--scale-factor)) var(--cloud-secondary-color),
+                calc(-5px * var(--scale-factor)) calc(-25px * var(--scale-factor)) calc(30px * var(--scale-factor)) calc(10px * var(--scale-factor)) var(--cloud-secondary-color);
+  }
+  100% {
+    transform: rotate(5deg);
+    box-shadow: 0 0 calc(90px * var(--scale-factor)) calc(30px * var(--scale-factor)) var(--cloud-primary-color),
+                calc(35px * var(--scale-factor)) calc(20px * var(--scale-factor)) calc(40px * var(--scale-factor)) calc(15px * var(--scale-factor)) var(--cloud-secondary-color),
+                calc(-30px * var(--scale-factor)) calc(-30px * var(--scale-factor)) calc(40px * var(--scale-factor)) calc(10px * var(--scale-factor)) var(--cloud-secondary-color);
+  }
 }
 
 .particles {
@@ -62,8 +102,8 @@
   position: absolute;
   top: calc(50% - 5px);
   left: calc(50% - 5px);
-  width: 10px;
-  height: 10px;
+  width: var(--particle-size);
+  height: var(--particle-size);
   border-radius: 50%;
 }
 
@@ -73,21 +113,6 @@
 
 .pulse{
   animation: pulse 1.5s linear 0s infinite alternate;
-}
-
-@keyframes glow {
-  0% {
-    transform: rotate(0deg);
-    box-shadow: 0 0 60px 20px #56bcf9,
-                25px 15px 50px 10px #fff,
-                -5px -25px 30px 5px #fff;
-  }
-  100% {
-    transform: rotate(5deg);
-    box-shadow: 0 0 90px 20px #56bcf9,
-                35px 20px 40px 10px #fff,
-                -30px -30px 40px 5px #fff;
-  }
 }
 
 @keyframes rotate {
@@ -119,14 +144,14 @@
 
 @keyframes position {
   0% {
-    transform: translate3d(0,0,0);
+    transform: translate(0,0);
     opacity: 1;
   }
   50% {
     opacity: 1;
   }
   100% {
-    transform: translate3d(100px,100px,0);
+    transform: translate(calc(100px * var(--scale-factor)), calc(100px * var(--scale-factor)));
     opacity: 0;
   }
 }
@@ -142,22 +167,22 @@
 
 @keyframes particle {
   0% {
-    box-shadow: inset 0 0 20px 20px #0079e8, 0 0 50px 10px #0079e8, inset 0 0 80px 80px #269aff;
+    box-shadow: inset 0 0 20px 20px var(--particle-color-1), 0 0 50px 10px var(--particle-color-1), inset 0 0 80px 80px var(--particle-color-2);
   }
   33.33% {
-    box-shadow: inset 0 0 20px 20px #0079e8, 0 0 130px 10px #0079e8, inset 0 0 50px 50px #269aff;
+    box-shadow: inset 0 0 20px 20px var(--particle-color-1), 0 0 130px 10px var(--particle-color-1), inset 0 0 50px 50px var(--particle-color-2);
   }
   33.34% {
-    box-shadow: inset 0 0 20px 20px #2693ff, 0 0 50px 10px #2693ff, inset 0 0 80px 80px #52abff;
+    box-shadow: inset 0 0 20px 20px var(--particle-color-3), 0 0 50px 10px var(--particle-color-3), inset 0 0 80px 80px var(--particle-color-4);
   }
   66.66% {
-    box-shadow: inset 0 0 20px 20px #2693ff, 0 0 130px 10px #2693ff, inset 0 0 50px 50px #52abff;
+    box-shadow: inset 0 0 20px 20px var(--particle-color-3), 0 0 130px 10px var(--particle-color-3), inset 0 0 50px 50px var(--particle-color-4);
   }
   66.67% {
-    box-shadow: inset 0 0 20px 20px #485fe8, 0 0 50px 10px #485fe8, inset 0 0 80px 80px #7d71e8;
+    box-shadow: inset 0 0 20px 20px var(--particle-color-5), 0 0 50px 10px var(--particle-color-5), inset 0 0 80px 80px var(--particle-color-6);
   }
   100% {
-    box-shadow: inset 0 0 20px 20px #485fe8, 0 0 130px 10px #485fe8, inset 0 0 50px 50px #7d71e8;
+    box-shadow: inset 0 0 20px 20px var(--particle-color-5), 0 0 130px 10px var(--particle-color-5), inset 0 0 50px 50px var(--particle-color-6);
   }
 }
 
