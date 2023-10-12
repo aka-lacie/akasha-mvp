@@ -7,7 +7,7 @@
   --background-start-rgb: 255, 255, 255;
   --background-end-rgb: 0, 128, 0;
   --word-cloud-green-color: green;
-  --answer-bubble-rgb: rgb(194, 248, 214, 1);
+  --answer-bubble-rgb: 194, 248, 214;
 }
 
 .dark {
@@ -15,7 +15,7 @@
   --background-start-rgb: 0, 128, 0;
   --background-end-rgb: 0, 0, 0;
   --word-cloud-green-color: #00ff00;
-  --answer-bubble-rgb: rgb(23, 51, 3, 1);
+  --answer-bubble-rgb: 23, 51, 3;
 }
 
 body {
@@ -108,8 +108,6 @@ body {
   }
 }
 
-
-
 /* AkashaResponse */
 .answerBubbleOpen {
   position: relative;
@@ -124,12 +122,13 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(ellipse at center, var(--answer-bubble-rgb) 0%, var(--answer-bubble-rgb) 55%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(ellipse at center, rgb(var(--answer-bubble-rgb), 1) 0%, rgb(var(--answer-bubble-rgb), 1) 55%, rgba(255, 255, 255, 0) 70%);
   z-index: -1;
   transform-origin: center;
   transform: scale(0.1, 0.1);
   opacity: 0.8;
-  animation: expandMask 4s ease-in-out forwards;
+  animation: expandMask 4s ease-in-out forwards,
+              bubblePulse 1.5s ease-in-out infinite alternate 4s;
 }
 
 .textClip {
@@ -142,6 +141,11 @@ body {
   30% { transform: scale(0.3, 1.8); }
   90% { transform: scale(1.8, 1.8); }
   100% { transform: scale(1.8, 1.8); }
+}
+
+@keyframes bubblePulse {
+  0% { scale: 1; }
+  100% { scale: 0.95; }
 }
 
 @keyframes expandText {
