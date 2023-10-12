@@ -14,7 +14,7 @@ const AkashaTerminalInterface: React.FC = () => {
   const [moveQueryBarUp, setMoveQueryBarUp] = useState(false);
   const [queryBarIsUp, setQueryBarIsUp] = useState(false);
   const [answerIsReady, setAnswerIsReady] = useState(false);
-  const [queryStatus, setQueryStatus] = useState<statusCodes>('')
+  const [queryStatus, setQueryStatus] = useState<statusCode>('')
 
   const handleQuery = (query: string) => {
     if (!query) {
@@ -42,6 +42,10 @@ const AkashaTerminalInterface: React.FC = () => {
       switch (message.type) {
         case 'snippets':
           console.log('Received snippets.');
+          setTimeout(() => {
+            setQueryStatus('searchingDatabase');
+          }
+          , 1000);
           setData({type: 'snippets', info: message.data});
           break;
         case 'response':
@@ -60,23 +64,31 @@ const AkashaTerminalInterface: React.FC = () => {
     });
   };
 
+  useEffect(() => {
+    if (!answerIsReady) return;
+    setTimeout(() => {
+      setQueryStatus('done');
+    }, 3000);
+  }, [answerIsReady]);
+
   const acceptingInput = queryStatus === 'done' || queryStatus === 'error' || queryStatus === '';
 
   return (
-    <div className={`grid grid-rows-6 h-[75vh] w-[70vw] min-w-[250px] transition-all ease-in-out duration-500`}>
-      <div className={`z-30 ${moveQueryBarUp ? 'row-end-1' : 'row-start-4'} transition-all ease-in-out duration-500`}>
+    <div className={`relative grid grid-rows-6 h-[75vh] w-[70vw] min-w-[250px] transition-all ease-in-out duration-500`}>
+      <div className={`z-30 row-start-4 absolute w-full transition-transform ease-in-out duration-1000 ${moveQueryBarUp && 'transform -translate-y-[37.5vh]'}`}>
         <TC.QueryBar handleQuery={handleQuery} acceptingInput={acceptingInput} />
+        {queryBarIsUp && (
+          <div className="z-40 absolute left-[28%] mt-2 transition-all ease-in-out duration-500">
+            <TC.StatusBar status={queryStatus} />
+          </div>
+        )}
       </div>
   
       {queryBarIsUp && (
         <>
-          <div className="z-30 row-start-1 flex justify-center transition-all ease-in-out duration-500">
-            <TC.StatusBar status={queryStatus} />
-          </div>
-  
           {(data.info.length > 0) && (
             <div className="relative row-start-2 row-end-7 h-full w-full transition-opacity ease-in-out duration-500 opacity-0 appear opacity-100">
-              <TC.DataWordCloud data={data} setAnswerIsReady={setAnswerIsReady} />
+              <TC.DataWordCloud data={data} setAnswerIsReady={setAnswerIsReady} setQueryStatus={setQueryStatus}/>
               {answerIsReady && (
                 <div className="z-20 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-opacity ease-in-out duration-500 opacity-0 appear opacity-100">
                   <TC.AkashaResponse answer={answer} />
