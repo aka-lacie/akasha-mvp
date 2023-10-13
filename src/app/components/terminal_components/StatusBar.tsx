@@ -5,7 +5,7 @@ const statusMessages = {
   'searchingDatabase': 'Searching database...',
   'receivedData': 'Received data.',
   'thinking': 'Thinking...',
-  'constructingAnswer': 'Constructing answer',
+  'constructingAnswer': 'Constructing answer...',
   'done': 'Done.',
   'error': 'An ERROR has occurred. Please try a new query.',
   '' : '',

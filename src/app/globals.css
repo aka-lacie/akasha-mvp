@@ -79,7 +79,7 @@ body {
   100% {
     transform: scale(1);
     opacity: .6;
-    color: var(--word-cloud-green-color, green); /* Set this variable based on dark/light mode */
+    color: var(--word-cloud-green-color, green);
   }
 }
 
