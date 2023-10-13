@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import axios from 'axios';
 import { OpenAI } from 'openai';
 
 // MODELS
@@ -16,12 +15,12 @@ const supabaseClient : SupabaseClient = createClient(supabase_url, supabase_key)
 
 const systemPrompt = 'You are the Akasha Terminal, a smart database able to access the collective knowledge of Teyvat stored in the Irminsul. You do not answer questions outside of the scope of Genshin Impact.'
 const initialPrompt = `
-  Use the data provided by the Irminsul to answer the given question. Answer in two parts labeled "Brainstorm" and "Answer". Note any info you read in the data relevant to the question in "Brainstorm". Write your conclusion and brief justification in "Answer", but keep it concise - every word counts. If you cannot determine any answer, write "The answer was not found within the Irminsul." Some examples: \
-  1. Relevant Question: "What happened in Scaramouche\'s past?" \
-  GPT Response: """Brainstorm: - Scaramouche was originally created as a test puppet body by Ei. - He settled in Tatarasuna and became close with Katsuragi. - Dottore infiltrated Tatarasuna and caused chaos with Crystal Marrow. -...[rest of brainstorm] Answer: Scaramouche was created as a test puppet body by Ei. He settled in Tatarasuna and formed a close relationship with Katsuragi. However, chaos ensued...[rest of answer]""" \
-  2. Relevant but Unanswerable Question: "Where did Celestia come from?" \
-  """Brainstorm: - Celestia is a place that floats in the sky and is said to be where the gods reside. - It is not mentioned in the provided data where Celestia came from. - Celestia is associated with the gods and is the place where humans may ascend if they obtain godhood...[rest of brainstorm] Answer: It is not clear where Celestia came from. However, Celestia is described as a place that floats in the sky and is associated with the gods. It is depicted as a floating island...[rest of answer]"""
+  Use the data provided by the Irminsul to answer the given question. Answer in two parts labeled "Brainstorm" and "Answer". Note any info you read in the data relevant to the question in "Brainstorm". Write your conclusion and brief justification in "Answer", but keep it concise - every word counts. If you cannot determine any answer, write "The answer was not found within the Irminsul." Example: \
+  1. Question: "What happened in Scaramouche\'s past?" \
+  GPT Response: """Brainstorm: - Scaramouche was originally created as a test puppet body by Ei. - He settled in Tatarasuna and became close with Katsuragi. - Dottore infiltrated Tatarasuna and caused chaos with Crystal Marrow. -...[rest of brainstorm] Answer: Scaramouche was created as a test puppet body by Ei. He settled in Tatarasuna and formed a close relationship with Katsuragi. However, chaos ensued...[rest of answer]"""
 `
+// 2. Relevant but Unanswerable Question: "Where did Celestia come from?" \
+// """Brainstorm: - Celestia is a place that floats in the sky and is said to be where the gods reside. - It is not mentioned in the provided data where Celestia came from. - Celestia is associated with the gods and is the place where humans may ascend if they obtain godhood...[rest of brainstorm] Answer: It is not clear where Celestia came from. However, Celestia is described as a place that floats in the sky and is associated with the gods. It is depicted as a floating island...[rest of answer]"""
 // 3. Irrelevant Question: "What is the best car to buy right now?" \
 // """"Brainstorm: [irrelevant data] Answer: This knowledge is beyond my reach. The answer was not found within the Irminsul.""" \
 // 4. Meta Question: "Who/What are you?" \
@@ -101,29 +100,41 @@ const getRelatedTextFromSupabase = async (
 /**
  * Generates snippets from related text.
  * @param relatedText - An array of tuples containing the related text and its relatedness score.
- * @param snippetCount - The number of snippets to generate. Defaults to 10.
- * @param snippetLength - The minimum length of each snippet. Defaults to 50.
+ * @param snippetCount - The number of snippets to generate.
+ * @param snippetMinLength - The minimum length of each snippet.
+ * @param snippetMaxLength - The maximum length of each snippet.
  * @returns An array of strings containing the generated snippets.
  */
 const generateSnippetsFromRelatedText = (
   relatedText: [string, number][],
-  snippetCount: number = 10,
-  snippetLength: number = 50
+  snippetCount: number = 30,
+  snippetMinLength: number = 50,
+  snippetMaxLength: number = 150
 ): string[] => {
+  const factor = Math.max(1, Math.floor(snippetCount / relatedText.length));
+  
   const snippets: string[] = [];
 
   for (const [string, _relatedness] of relatedText) {
-    // Deliminate by newlines and periods. Return first line that is at least snippetLength characters long.
+    // Deliminate by newlines and periods.
     const lines = string.split(/[.\n]/);
-    const snippet = lines.find((line) => line.length >= snippetLength);
+    // Remove wikitext characters from each line
+    const cleanedLines = lines.map((line) => line.replace(/[=<>[\]{}|]/g, ''));
+    // Return first line that is at least snippetMinLength characters long.
+    const filteredLines = cleanedLines.filter((line) => line.length >= snippetMinLength);
 
-    if (!snippet) {
+    if (filteredLines.length === 0) {
       continue;
     }
-    snippets.push(snippet.trim());
+
+    // Push the first `factor` lines to snippets.
+    const newSnippets = filteredLines.slice(0, factor);
+    for (const snippet of newSnippets) {
+      snippets.push(snippet.trim().slice(0, snippetMaxLength));
+    }
   }
 
-  return snippets.slice(0, snippetCount);
+  return snippets;
 };
 
 // ============================================================
