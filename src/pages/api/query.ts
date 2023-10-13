@@ -233,6 +233,12 @@ const parseBrainstorm = (brainstorm: string): string[] => {
 // ============================================================
 // MAIN
 // ============================================================
+const sanitizeQuery = (query: string): string => {
+  let sanitizedQuery = query.replace(/[:;()\[\]{}]/g, '-');
+  sanitizedQuery.replace(/[^a-zA-Z0-9'"? ]/g, '');
+  return sanitizedQuery;
+}
+
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     res.setHeader('Content-Type', 'text/event-stream');
@@ -240,11 +246,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Content-Encoding', 'none')
 
-    const query = req.query.query as string;
+    const query = sanitizeQuery(req.query.query as string);
     if (!query) {
       throw new Error('No query provided.');
     }
-    console.log("Got request.")
 
     console.log("Searching Irminsul for: " + query)
     const searchData = TESTMODE ?

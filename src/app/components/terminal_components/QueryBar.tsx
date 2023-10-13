@@ -8,7 +8,7 @@ const QueryBar: React.FC<QueryBarProps> = ({ handleQuery, acceptingInput }) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!isQueryEmpty && acceptingInput) {
-      handleQuery(query);
+      handleQuery(query.trim());
     }
   };
 
@@ -20,7 +20,7 @@ const QueryBar: React.FC<QueryBarProps> = ({ handleQuery, acceptingInput }) => {
     setIsFocused(false);
   };
 
-  const isQueryEmpty = !query.trim();
+  const isQueryEmpty = !query.trim().replace(/[^a-zA-Z]/g, '');
   const isExpanded = isFocused || !isQueryEmpty;
 
   return (
@@ -33,6 +33,7 @@ const QueryBar: React.FC<QueryBarProps> = ({ handleQuery, acceptingInput }) => {
           className={`flex-grow py-2 px-4 rounded-l-full text-black dark:text-white focus:outline-none bg-white dark:bg-gray-700 transition-all ease-in-out duration-300 w-64 ${isExpanded && 'md:w-96'}`}
           type="text"
           placeholder="Search the Irminsul..."
+          maxLength={100}
           onFocus={handleFocus}
           onBlur={handleBlur}
           onChange={(e) => setQuery(e.target.value)}
