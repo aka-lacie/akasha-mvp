@@ -15,8 +15,9 @@ const AkashaTerminalInterface: React.FC = () => {
   const [queryBarIsUp, setQueryBarIsUp] = useState(false);
   const [answerIsReady, setAnswerIsReady] = useState(false);
   const [queryStatus, setQueryStatus] = useState<statusCode>('')
+  const [errorMsg, setErrorMsg] = useState<string>('');
 
-  const handleQuery = (query: string) => {
+  const handleQuery = async (query: string) => {
     if (!query) {
       console.error('This should never occur because the button should be disabled if the query is empty');
       return;
@@ -32,13 +33,27 @@ const AkashaTerminalInterface: React.FC = () => {
     setData({ type: '', info: [] });
     setAnswer('');
     setAnswerIsReady(false);
+    setErrorMsg('');
 
-    const eventSource = new EventSource(`/api/query?query=${encodeURIComponent(query)}`);
+    const response = await fetch(`/api/query`, {
+      method: 'POST',
+      headers: { 
+          'x-access-code': '1234',
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query }),
+    });
 
-    eventSource.addEventListener('message', (event: any) => {
-      const message = JSON.parse(event.data);
-      console.log(`message: ${message}`);
-
+    const reader = response.body?.getReader();
+    if (!reader) { // make typescript happy
+      return;
+    }
+    
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      const message = JSON.parse(new TextDecoder().decode(value));
       switch (message.type) {
         case 'snippets':
           setTimeout(() => {
@@ -50,15 +65,15 @@ const AkashaTerminalInterface: React.FC = () => {
         case 'response':
           setData({type: 'brainstorm', info: message.data['brainstorm']})
           setAnswer(message.data['answer']);
-          eventSource.close();
+          reader.cancel();
           break;
         case 'error':
-          console.error('Error:', message.data);
           setQueryStatus('error');
-          eventSource.close();
+          setErrorMsg(message.data);
+          reader.cancel();
           break;
       }
-    });
+    }
   };
 
   useEffect(() => {
@@ -75,8 +90,8 @@ const AkashaTerminalInterface: React.FC = () => {
       <div className={`z-30 row-start-4 absolute w-full transition-transform ease-in-out duration-1000 ${moveQueryBarUp && 'transform -translate-y-[37.5vh]'}`}>
         <TC.QueryBar handleQuery={handleQuery} acceptingInput={acceptingInput} />
         {queryBarIsUp && (
-          <div className="z-40 absolute md:left=[15%] lg:left-[28%] mt-2 transition-all ease-in-out duration-500">
-            <TC.StatusBar status={queryStatus} />
+          <div className="z-40 absolute left-[10%] md:left-[15%] lg:left-[28%] mt-2 transition-all ease-in-out duration-500">
+            <TC.StatusBar status={queryStatus} errorMsg={errorMsg} />
           </div>
         )}
       </div>

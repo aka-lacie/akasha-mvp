@@ -7,6 +7,7 @@ type statusCode = 'receivedQuery' | 'searchingDatabase' | 'receivedData' | 'thin
 
 interface StatusBarProps {
   status: statusCode;
+  errorMsg?: string;
 }
 
 interface DataWordCloudProps {
