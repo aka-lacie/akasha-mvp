@@ -11,7 +11,7 @@ const statusMessages = {
   '' : '',
 }
 
-const StatusBar: React.FC<StatusBarProps> = ({ status }) => {
+const StatusBar: React.FC<StatusBarProps> = ({ status, errorMsg }) => {
   const [displayString, setDisplayString] = useState('');
   const [showCursor, setShowCursor] = useState(true);
   const [statusQueue, setStatusQueue] = useState<statusCode[]>([]);
@@ -40,7 +40,9 @@ const StatusBar: React.FC<StatusBarProps> = ({ status }) => {
     
     let index = 0;
     if (currentStatus && statusMessages[currentStatus]) {
-      const message = statusMessages[currentStatus];
+      const message = errorMsg ? 
+                      `ERROR: ${errorMsg}` :
+                      statusMessages[currentStatus];
       setTyping(true);
       const timer = setInterval(() => {
         if (index < message.length) {

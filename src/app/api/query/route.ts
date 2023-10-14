@@ -1,4 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { OpenAI } from 'openai';
 
@@ -239,57 +241,87 @@ const sanitizeQuery = (query: string): string => {
   return sanitizedQuery;
 }
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
-  try {
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('Content-Encoding', 'none')
+export const runtime = 'edge';
+export const preferredRegion = 'sfo1'
 
-    const query = sanitizeQuery(req.query.query as string);
-    if (!query) {
-      throw new Error('No query provided.');
-    }
-
-    console.log("Searching Irminsul for: " + query)
-    const searchData = TESTMODE ?
-      [] :
-      await getRelatedTextFromSupabase(query);
-
-    console.log("Received search data. Processing...")
-    const snippets = TESTMODE ?
-      testLoremIpsum :
-      generateSnippetsFromRelatedText(searchData);
-
-    console.log("Sending preliminary data...")
-    res.write(`data: ${JSON.stringify({ type: 'snippets', data: snippets })}\n\n`);
-
-    console.log("Constructing answer...")
-    // if TESTMODE, sleep for some seconds to simulate API call
-    if (TESTMODE) {
-      await new Promise(resolve => setTimeout(resolve, 5000));
-    }
-    const response = TESTMODE ? 
-      testResponse :
-      await ask(query, searchData);
-
-    console.log(response);
-    console.log("Received response! Processing...");
-    const brainstormAndAnswer = parseResponse(response);
-    const brainstormArray = parseBrainstorm(brainstormAndAnswer[0]);
-
-    res.write(`data: ${JSON.stringify({ 
-      type: 'response',
-      data: {
-        brainstorm: brainstormArray,
-        answer: brainstormAndAnswer[1],
+export async function POST(req: NextRequest) {
+  console.log("Received POST request.")
+  const encoder = new TextEncoder();
+  const readable: ReadableStream<Uint8Array> = new ReadableStream({
+    async start(controller) {
+      try {
+        const requestBody = await req.text();
+        const { query: queryParam } = JSON.parse(requestBody);      
+        const query = sanitizeQuery(queryParam);
+      
+        if (!query) {
+          throw new Error('No query provided.');
+        }
+      
+        console.log("Searching Irminsul for: " + query);
+        
+        const searchData = TESTMODE ?
+          [] :
+          await getRelatedTextFromSupabase(query);
+    
+        console.log("Received search data. Processing...")
+        const snippets = TESTMODE ?
+          testLoremIpsum :
+          generateSnippetsFromRelatedText(searchData);
+    
+        console.log("Sending preliminary data...")
+        controller.enqueue(encoder.encode(JSON.stringify({ type: 'snippets', data: snippets })));
+    
+        console.log("Constructing answer...")
+        // if TESTMODE, sleep for some seconds to simulate API call
+        if (TESTMODE) {
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+        const response = TESTMODE ? 
+          testResponse :
+          await ask(query, searchData);
+    
+        console.log(response);
+        console.log("Received response! Processing...");
+        const brainstormAndAnswer = parseResponse(response);
+        const brainstormArray = parseBrainstorm(brainstormAndAnswer[0]);
+    
+        controller.enqueue(encoder.encode(JSON.stringify({
+          type: 'response',
+          data: {
+            brainstorm: brainstormArray,
+            answer: brainstormAndAnswer[1],
+          }
+        })));
+        console.log("Finished!")
+      } catch (err : any) {
+        const errorMessage = err?.message ?? 'An unexpected error occurred.';
+        console.log(errorMessage);
+        if (controller) {
+          controller.enqueue(encoder.encode(JSON.stringify({ type: 'error', data: errorMessage })));
+        }
+      } finally {
+        if (controller) {
+          controller.close();
+        }
+        console.log("Closed connection.")
       }
-    })}\n\n`);
-    console.log("Finished!")
-  } catch (err : any) {
-    res.write(`data: ${JSON.stringify({ type: 'error', data: err.message })}\n\n`);
-  } finally {
-    res.end();
-    console.log("Closed connection.")
-  }
+
+    },
+  });
+  
+  // Set necessary headers for SSE
+  const response = new Response(readable, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  });
+
+  return new NextResponse(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
 };
