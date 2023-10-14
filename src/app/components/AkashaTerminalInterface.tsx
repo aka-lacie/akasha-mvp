@@ -38,7 +38,7 @@ const AkashaTerminalInterface: React.FC = () => {
     const response = await fetch(`/api/query`, {
       method: 'POST',
       headers: { 
-          'x-access-code': '1234',
+          'Access-Code': localStorage.getItem('accessCode') || '',
           'Content-Type': 'application/json',
       },
       body: JSON.stringify({ query }),
@@ -71,6 +71,11 @@ const AkashaTerminalInterface: React.FC = () => {
           setQueryStatus('error');
           setErrorMsg(message.data);
           reader.cancel();
+          
+          if (message.data.includes('access code')) {
+            localStorage.removeItem('accessCode');
+            (document.activeElement as HTMLInputElement)?.blur();
+          }
           break;
       }
     }

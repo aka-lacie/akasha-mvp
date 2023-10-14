@@ -14,6 +14,15 @@ const QueryBar: React.FC<QueryBarProps> = ({ handleQuery, acceptingInput }) => {
 
   const handleFocus = () => {
     setIsFocused(true);
+
+    if (!localStorage.getItem('accessCode')) {
+      const code = prompt('Please enter your invitation code:');
+      if (code) {
+        localStorage.setItem('accessCode', code);
+      } else {
+        (document.activeElement as HTMLInputElement)?.blur();
+      }
+    }
   };
 
   const handleBlur = () => {
