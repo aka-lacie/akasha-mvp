@@ -6,8 +6,7 @@ export const config = {
 
 const middleware = async (req: NextRequest) => {
   const accessCode = req.headers.get('Access-Code') || '';
-  const validAccessCodes = ['1234'];
-  // process.env.VALID_ACCESS_CODES.split(',');
+  const validAccessCodes = ['laciehello'];
 
   if (!validAccessCodes.includes(accessCode)) {
     console.log('Error: Invalid or missing access code.');
