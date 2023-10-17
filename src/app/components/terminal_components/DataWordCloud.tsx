@@ -6,10 +6,10 @@ import CollapseStar from './CollapseStar';
 const opt = {
 };
 
-const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady, setQueryStatus }) => {
+const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady, setQueryStatus, kill=false }) => {
   const [snippets, setSnippets] = useState<string[]>([]);
   const [activeSnippetsIndices, setActiveSnippetsIndices] = useState<number[]>([]);
-  const [inactiveSnippetsIndices, setInactiveSnippetsIndices] = useState<number[]>([]); // TODO: use this to remove snippets from DOM
+  const [inactiveSnippetsIndices, setInactiveSnippetsIndices] = useState<number[]>([]);
   const [shuffledSnippetsIndices, setShuffledSnippetsIndices] = useState<number[]>([]);
   const [snippetsPositions, setSnippetsPositions] = useState<Position[]>([]);
   const snippetsLength = useRef<number>(0);
@@ -61,7 +61,7 @@ const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady, s
     const newIndex = activeSnippetsIndices[activeSnippetsIndices.length - 1];
 
     // Run through the snippets again if more time is needed
-    if (newIndex === snippets.length - 1 && brainstorm.length === 0) {
+    if (!kill && newIndex === snippets.length - 1 && brainstorm.length === 0) {
       setAllowBrainstorm(false);
       batchNum.current += 1;
       let newSnippets = snippets.slice(0, snippetsLength.current);

@@ -17,6 +17,7 @@ const AkashaTerminalInterface: React.FC = () => {
   const [queryStatus, setQueryStatus] = useState<statusCode>('')
   const [errorMsg, setErrorMsg] = useState<string>('');
   const interfaceRef = useRef<HTMLDivElement>(null);
+  const killWordCloud = useRef<boolean>(false);
 
   const handleQuery = async (query: string) => {
     if (!query) {
@@ -35,6 +36,7 @@ const AkashaTerminalInterface: React.FC = () => {
     setAnswer('');
     setAnswerIsReady(false);
     setErrorMsg('');
+    killWordCloud.current = false;
 
     const response = await fetch(`/api/query`, {
       method: 'POST',
@@ -49,6 +51,8 @@ const AkashaTerminalInterface: React.FC = () => {
     if (!reader) { // make typescript happy
       return;
     }
+
+    let heartbeatTimeout;
     
     while (true) {
       const { done, value } = await reader.read();
@@ -56,6 +60,16 @@ const AkashaTerminalInterface: React.FC = () => {
       
       const message = JSON.parse(new TextDecoder().decode(value));
       switch (message.type) {
+        case 'keep-alive':
+          clearTimeout(heartbeatTimeout);
+          heartbeatTimeout = setTimeout(() => {
+              // No heartbeat received for 10 seconds, assume connection drop
+              setQueryStatus('error');
+              setErrorMsg('Connection dropped unexpectedly. Please try again.');
+              killWordCloud.current = true;
+              reader.cancel();
+          }, 10000);
+          break;
         case 'snippets':
           setTimeout(() => {
             setQueryStatus('searchingDatabase');
@@ -67,11 +81,13 @@ const AkashaTerminalInterface: React.FC = () => {
           setData({type: 'brainstorm', info: message.data['brainstorm']})
           setAnswer(message.data['answer']);
           reader.cancel();
+          clearTimeout(heartbeatTimeout);
           break;
         case 'error':
           setQueryStatus('error');
           setErrorMsg(message.data);
           reader.cancel();
+          clearTimeout(heartbeatTimeout);
           
           if (message.data.includes('access code')) {
             localStorage.setItem('accessCode', '');
@@ -111,7 +127,7 @@ const AkashaTerminalInterface: React.FC = () => {
   
       {(queryBarIsUp && data.info.length > 0) && (
         <div className="relative row-start-2 row-end-7 h-full max-w-full transition-opacity ease-in-out duration-500 opacity-0 appear opacity-100">
-          <TC.DataWordCloud data={data} setAnswerIsReady={setAnswerIsReady} setQueryStatus={setQueryStatus}/>
+          <TC.DataWordCloud data={data} setAnswerIsReady={setAnswerIsReady} setQueryStatus={setQueryStatus} kill={killWordCloud.current}/>
           {answerIsReady && (
             <div className="z-20 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-opacity ease-in-out duration-500 opacity-0 appear opacity-100">
               <TC.AkashaResponse answer={answer} />
