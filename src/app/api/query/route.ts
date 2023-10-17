@@ -265,7 +265,13 @@ export async function POST(req: NextRequest) {
   const encoder = new TextEncoder();
   const readable: ReadableStream<Uint8Array> = new ReadableStream({
     async start(controller) {
+      let keepAliveInterval: NodeJS.Timeout | null = null; 
+
       try {
+        keepAliveInterval = setInterval(() => {
+          controller.enqueue(encoder.encode(JSON.stringify({ type: 'keep-alive', data: ' ' })));
+        }, 5000);  // Sends a keep-alive packet every 5 seconds
+
         const requestBody = await req.text();
         const { query: queryParam } = JSON.parse(requestBody);      
         const query = sanitizeText(queryParam);
@@ -293,7 +299,7 @@ export async function POST(req: NextRequest) {
         if (TESTMODE) {
           await new Promise(resolve => setTimeout(resolve, 5000));
         }
-        const response = TESTMODE ? 
+        const response = TESTMODE ?
           testResponse :
           sanitizeText(await ask(query, searchData));
     
@@ -319,6 +325,9 @@ export async function POST(req: NextRequest) {
           controller.enqueue(encoder.encode(JSON.stringify({ type: 'error', data: errorMessage })));
         }
       } finally {
+        if (keepAliveInterval) {
+          clearInterval(keepAliveInterval);
+        }
         if (controller) {
           controller.close();
         }
@@ -335,10 +344,4 @@ export async function POST(req: NextRequest) {
       'Connection': 'keep-alive',
     },
   });
-
-  // return new NextResponse(response.body, {
-  //   status: response.status,
-  //   statusText: response.statusText,
-  //   headers: response.headers,
-  // });
 };
