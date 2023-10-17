@@ -296,8 +296,6 @@ export async function POST(req: NextRequest) {
         const response = TESTMODE ? 
           testResponse :
           sanitizeText(await ask(query, searchData));
-
-        !TESTMODE && await logQA(query, response);
     
         console.log(response);
         console.log("Received response! Processing...");
@@ -311,6 +309,8 @@ export async function POST(req: NextRequest) {
             answer: brainstormAndAnswer[1],
           }
         })));
+
+        !TESTMODE && logQA(query, response);
         console.log("Finished!")
       } catch (err : any) {
         const errorMessage = err?.message ?? 'An unexpected error occurred.';
