@@ -15,9 +15,9 @@ interface DataWordCloudProps {
     type: 'snippets' | 'brainstorm' | '',
     info: string[],
   },
-
   setAnswerIsReady: React.Dispatch<React.SetStateAction<boolean>>,
   setQueryStatus: React.Dispatch<React.SetStateAction<statusCode>>,
+  kill?: boolean,
 }
 
 interface Position { x: number, y: number }
