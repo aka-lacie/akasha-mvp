@@ -1,5 +1,4 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { OpenAI } from 'openai';
 
@@ -27,7 +26,7 @@ const initialPrompt = `
 // 4. Meta Question: "Who/What are you?" \
 // """Brainstorm: [irrelevant data] Answer: I am the Akasha Terminal, a knowledge interface connected to the collective data repository of the Irminsul."""'
 
-const TESTMODE = false; // Doesn't make API calls in test mode
+const TESTMODE = true; // Doesn't make API calls in test mode
 const testLoremIpsum: string[] = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
   "Id donec ultrices tincidunt arcu non sodales neque sodales ut.",
@@ -210,6 +209,7 @@ const ask = async (
       model: model,
       messages: messages,
       temperature: 0,
+      max_tokens: tokenBudget,
     });
 
     return chatCompletion.choices[0].message.content || '';

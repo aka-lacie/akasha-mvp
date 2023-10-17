@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Akasha Terminal',
-  description: 'Genshin lore Q&A',
+  description: 'Genshin lore Q&A | Powered by pgvector & GPT',
 }
 
 export default function RootLayout({

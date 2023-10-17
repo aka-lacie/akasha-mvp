@@ -15,9 +15,9 @@ const ReconstructingText: React.FC<ReconstructingTextProps> = ({ targetString })
       setBooleanMask(newMask);
       setCurrentString(newString);
     }, 100); // milliseconds per step
-    
+
     return () => clearInterval(intervalId);
-  }, [booleanMask]);
+  }, []);
 
   return <span className="font-mono">{currentString}</span>;
 };
@@ -26,9 +26,9 @@ const generateRandomString = (l: number) => {
   const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
   return Array.from({ length: l }).map(() => characters[Math.floor(Math.random() * characters.length)]).join('');
 };
-  
+
 const updateMask = (mask: boolean[]) => {
-  const max_num = Math.floor(mask.length / 10);
+  const max_num = Math.floor(mask.length / 12);
   const numIndicesToUpdate = Math.floor(Math.random() * max_num) + 1;
   for (let i = 0; i < numIndicesToUpdate; ++i) {
     const randomIndex = Math.floor(Math.random() * mask.length);

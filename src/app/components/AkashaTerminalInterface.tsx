@@ -52,13 +52,14 @@ const AkashaTerminalInterface: React.FC = () => {
       return;
     }
 
+    const decoder = new TextDecoder();
     let heartbeatTimeout;
     
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       
-      const message = JSON.parse(new TextDecoder().decode(value));
+      const message = JSON.parse(decoder.decode(value));
       switch (message.type) {
         case 'keep-alive':
           clearTimeout(heartbeatTimeout);

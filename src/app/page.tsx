@@ -10,9 +10,9 @@ export default function Home() {
         <Image
           src="/akasha_symbol.svg"
           alt="Akasha Symbol"
-          className="z-0 fixed top-1/2 scale-110 md:top-[60%] left-[55%] transform -translate-x-1/2 -translate-y-1/2 opacity-30 dark:opacity-50 filter blur md:blur-md"
-          width={900}
-          height={900}
+          className="z-0 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-30 dark:opacity-50 md:w-[450px] md:h-[450px] filter blur md:blur-md"
+          width={250}
+          height={250}
           priority
         />
         <div className="z-40 fixed top-[5%] left-[5%] flex flex-col justify-center content-center gap-7 lg:gap-10">
@@ -20,7 +20,7 @@ export default function Home() {
             <i className="fas fa-cog fa-2xl ml-1 mb-4 text-gray-600 dark:text-gray-400 drop-shadow" />
             <i className="far fa-circle-question fa-2xl ml-1 text-gray-500 dark:text-gray-400 drop-shadow" />
         </div>
-        <div className="z-10 w-full items-center justify-between font-mono text-lg lg:ml-10 lg:flex">
+        <div className="z-10 w-full items-center justify-between font-mono text-lg lg:absolute lg:left-[10%] lg:flex">
           <div className="ml-10 flex w-auto justify-center dark:from-inherit lg:static lg:w-auto lg:ml-10">
             <div className="text-center">
               <h1 className="text-4xl font-bold font-serif">AKASHA</h1>
