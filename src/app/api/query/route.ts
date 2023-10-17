@@ -26,7 +26,7 @@ const initialPrompt = `
 // 4. Meta Question: "Who/What are you?" \
 // """Brainstorm: [irrelevant data] Answer: I am the Akasha Terminal, a knowledge interface connected to the collective data repository of the Irminsul."""'
 
-const TESTMODE = true; // Doesn't make API calls in test mode
+const TESTMODE = false; // Doesn't make API calls in test mode
 const testLoremIpsum: string[] = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
   "Id donec ultrices tincidunt arcu non sodales neque sodales ut.",
