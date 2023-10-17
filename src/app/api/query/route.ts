@@ -209,7 +209,6 @@ const ask = async (
       model: model,
       messages: messages,
       temperature: 0,
-      max_tokens: tokenBudget,
     });
 
     return chatCompletion.choices[0].message.content || '';
