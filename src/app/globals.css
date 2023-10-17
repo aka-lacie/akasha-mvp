@@ -111,7 +111,6 @@ body {
 /* AkashaResponse */
 .answerBubbleOpen {
   position: relative;
-  display: inline-block;
   box-sizing: border-box;
 }
 

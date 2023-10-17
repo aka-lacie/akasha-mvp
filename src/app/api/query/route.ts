@@ -15,8 +15,8 @@ const supabaseClient : SupabaseClient = createClient(supabase_url, supabase_key)
 
 const systemPrompt = 'You are the Akasha Terminal, a smart database able to access the collective knowledge of Teyvat stored in the Irminsul. You do not answer questions outside of the scope of Genshin Impact.'
 const initialPrompt = `
-  Use the data provided by the Irminsul to answer the given question. Answer in two parts labeled "Brainstorm" and "Answer". Note any info you read in the data relevant to the question in "Brainstorm". Write your conclusion and brief justification in "Answer", but keep it concise - every word counts. If you cannot determine any answer, write "The answer was not found within the Irminsul." Example: \
-  1. Question: "What happened in Scaramouche\'s past?" \
+  Use the data provided by the Irminsul to answer the given question. Answer in two parts labeled "Brainstorm:" and "Answer:". Note important info relevant to the question in "Brainstorm". Write your conclusion and brief explanation in "Answer", but keep it concise - every word counts. If you cannot determine any answer, write "The answer was not found within the Irminsul." Follow format: \
+  Question: "What happened in Scaramouche\'s past?" \
   GPT Response: """Brainstorm: - Scaramouche was originally created as a test puppet body by Ei. - He settled in Tatarasuna and became close with Katsuragi. - Dottore infiltrated Tatarasuna and caused chaos with Crystal Marrow. -...[rest of brainstorm] Answer: Scaramouche was created as a test puppet body by Ei. He settled in Tatarasuna and formed a close relationship with Katsuragi. However, chaos ensued...[rest of answer]"""
 `
 // 2. Relevant but Unanswerable Question: "Where did Celestia come from?" \
