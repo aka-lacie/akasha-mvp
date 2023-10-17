@@ -31,24 +31,30 @@ export default function Home() {
         </div>
 
         <AkashaTerminalInterface />
+        
 
-        {/* <div className="z-40 static bottom-0 left-0 flex h-48 w-full items-end lg:items-start justify-center font-mono gap-5 lg:h-auto lg:w-auto lg:bg-none">
-            <a
-              className="flex items-center gap-2 p-8 lg:p-0"
-              href="https://twitter.com/aka_lacie"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <i className="fa-brands fa-twitter text-[#26a7de] drop-shadow" aria-hidden="true"></i>
-              <p className="inline-block">aka_lacie</p>
-            </a>
-            <p
-              className="flex place-items-center gap-2 p-8 pointer-events-auto lg:p-0"
-            >
-              <i className="fa-brands fa-discord text-[#7289da] drop-shadow" aria-hidden="true"></i>
-              l_acie
+        <div className="z-40 static bottom-0 left-0 mt-10 flex flex-col font-mono gap-4">
+            <p className="flex whitespace-nowrap place-items-center p-0 lg:p-0">
+              Knowledge cutoff: version 4.0
             </p>
-          </div> */}
+            <div className="flex h-auto w-full items-end lg:items-start justify-center gap-5 lg:h-auto lg:w-auto lg:bg-none">
+              <a
+                className="flex items-center gap-2 p-0 lg:p-0"
+                href="https://twitter.com/aka_lacie"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i className="fa-brands fa-twitter text-[#26a7de] drop-shadow" aria-hidden="true"></i>
+                <p className="inline-block">aka_lacie</p>
+              </a>
+              <p
+                className="flex place-items-center gap-2 p-0 pointer-events-auto lg:p-0"
+              >
+                <i className="fa-brands fa-discord text-[#7289da] drop-shadow" aria-hidden="true"></i>
+                l_acie
+              </p>
+            </div>
+          </div>
       </main>
     </ThemeProvider>
   )

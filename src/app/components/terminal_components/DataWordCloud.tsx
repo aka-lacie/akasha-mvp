@@ -166,7 +166,7 @@ const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady, s
             transform: `translate(-50%, -50%) translate(${snippetsPositions[index].x}px, ${snippetsPositions[index].y}px)`
           } as React.CSSProperties}
         >
-          <div className="relative break-words w-72 growDisappear">
+          <div className="relative break-words w-72 line-clamp-2 md:line-clamp-3 growDisappear">
             <ReconstructingText targetString={snippets[index]} />
           </div>
         </div>
