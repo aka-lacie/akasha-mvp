@@ -324,12 +324,11 @@ export async function POST(req: NextRequest) {
         }
         console.log("Closed connection.")
       }
-
     },
   });
   
   // Set necessary headers for SSE
-  const response = new Response(readable, {
+  return new Response(readable, {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
@@ -337,9 +336,9 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return new NextResponse(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers: response.headers,
-  });
+  // return new NextResponse(response.body, {
+  //   status: response.status,
+  //   statusText: response.statusText,
+  //   headers: response.headers,
+  // });
 };
