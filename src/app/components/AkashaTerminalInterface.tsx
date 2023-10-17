@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as TC from './terminal_components';
 
 interface DataCloudInputType {
@@ -16,6 +16,7 @@ const AkashaTerminalInterface: React.FC = () => {
   const [answerIsReady, setAnswerIsReady] = useState(false);
   const [queryStatus, setQueryStatus] = useState<statusCode>('')
   const [errorMsg, setErrorMsg] = useState<string>('');
+  const interfaceRef = useRef<HTMLDivElement>(null);
 
   const handleQuery = async (query: string) => {
     if (!query) {
@@ -73,13 +74,20 @@ const AkashaTerminalInterface: React.FC = () => {
           reader.cancel();
           
           if (message.data.includes('access code')) {
-            localStorage.removeItem('accessCode');
+            localStorage.setItem('accessCode', '');
             (document.activeElement as HTMLInputElement)?.blur();
           }
           break;
       }
     }
   };
+
+  useEffect(() => {
+    if (moveQueryBarUp && interfaceRef.current && window.innerWidth < 768) {
+      const interfacePosition = interfaceRef.current.offsetTop;
+      window.scrollTo({ top: interfacePosition, behavior: 'auto' });
+    }
+  }, [moveQueryBarUp]);
 
   useEffect(() => {
     if (!answerIsReady) return;
@@ -91,8 +99,8 @@ const AkashaTerminalInterface: React.FC = () => {
   const acceptingInput = queryStatus === 'done' || queryStatus === 'error' || queryStatus === '';
 
   return (
-    <div className={`relative grid grid-rows-6 h-[75vh] w-[70vw] min-w-[250px] max-w-[100vw] transition-all ease-in-out duration-500`}>
-      <div className={`z-30 row-start-4 absolute w-full transition-transform ease-in-out duration-1000 ${moveQueryBarUp && 'transform -translate-y-[37.5vh]'}`}>
+    <div ref={interfaceRef} className={`relative grid grid-rows-6 h-[75vh] w-[70vw] min-w-[250px] max-w-[100vw] transition-all ease-in-out duration-500`}>
+      <div className={`z-30 row-start-4 absolute w-full transition-transform ease-in-out duration-1000 ${moveQueryBarUp && 'transform -translate-y-[37vh]'}`}>
         <TC.QueryBar handleQuery={handleQuery} acceptingInput={acceptingInput} />
         {queryBarIsUp && (
           <div className="z-40 absolute left-[10%] md:left-[15%] lg:left-[28%] mt-2 transition-all ease-in-out duration-500">

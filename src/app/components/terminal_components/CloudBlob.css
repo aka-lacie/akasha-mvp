@@ -3,7 +3,7 @@
 } */
 
 :root {
-  --scale-factor: 1;  /* sm */
+  --scale-factor: 3;  /* sm */
   --cloud-primary-color: #c1ecb0;
   --cloud-secondary-color: #7cff99;
   --particle-color-1: #00e83e;

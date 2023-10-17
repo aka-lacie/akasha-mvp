@@ -1,4 +1,3 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -28,7 +27,7 @@ const initialPrompt = `
 // 4. Meta Question: "Who/What are you?" \
 // """Brainstorm: [irrelevant data] Answer: I am the Akasha Terminal, a knowledge interface connected to the collective data repository of the Irminsul."""'
 
-const TESTMODE = true; // Doesn't make API calls in test mode
+const TESTMODE = false; // Doesn't make API calls in test mode
 const testLoremIpsum: string[] = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
   "Id donec ultrices tincidunt arcu non sodales neque sodales ut.",
@@ -93,12 +92,24 @@ const getRelatedTextFromSupabase = async (
   if (error) {
     throw new Error(`PostgresError when querying Supabase: ${error.message}`);
   }
-  return (data as any[]).map((record) => [record.content, record.similarity]);
+  return (data as any[]).map((record) => [cleanText(record.content), record.similarity]);
 };
 
 // ============================================================
 // POST-PROCESS SEARCH RESULTS
 // ============================================================
+/**
+ * Removes unwanted characters and extra whitespace from a given string.
+ * @param text - The string to be cleaned.
+ * @returns The cleaned string.
+ */
+const cleanText = (text: string): string => {
+  return text.replace(/[\t]/g, ' ')
+              .replace(/ +/g, ' ')
+              .replace(/[=<>[\]{}|]/g, '')
+              .trim();
+}
+
 /**
  * Generates snippets from related text.
  * @param relatedText - An array of tuples containing the related text and its relatedness score.
@@ -120,10 +131,8 @@ const generateSnippetsFromRelatedText = (
   for (const [string, _relatedness] of relatedText) {
     // Deliminate by newlines and periods.
     const lines = string.split(/[.\n]/);
-    // Remove wikitext characters from each line
-    const cleanedLines = lines.map((line) => line.replace(/[=<>[\]{}|]/g, ''));
     // Return first line that is at least snippetMinLength characters long.
-    const filteredLines = cleanedLines.filter((line) => line.length >= snippetMinLength);
+    const filteredLines = lines.filter((line) => line.length >= snippetMinLength);
 
     if (filteredLines.length === 0) {
       continue;
@@ -235,10 +244,17 @@ const parseBrainstorm = (brainstorm: string): string[] => {
 // ============================================================
 // MAIN
 // ============================================================
-const sanitizeQuery = (query: string): string => {
-  let sanitizedQuery = query.replace(/[:;()\[\]{}]/g, '-');
-  sanitizedQuery.replace(/[^a-zA-Z0-9'"? ]/g, '');
-  return sanitizedQuery;
+const sanitizeText = (text: string): string => {
+  return text
+          .replace(/[;()\[\]{}]/g, '-')
+          .replace(/[^a-zA-Z0-9'".,?:\- ]/g, '')
+          ;
+}
+
+const logQA = async (query: string, response: string) => {
+  await supabaseClient.from('query_logs').insert([
+    { user_query: query, llm_answer: response }
+  ])
 }
 
 export const runtime = 'edge';
@@ -252,7 +268,7 @@ export async function POST(req: NextRequest) {
       try {
         const requestBody = await req.text();
         const { query: queryParam } = JSON.parse(requestBody);      
-        const query = sanitizeQuery(queryParam);
+        const query = sanitizeText(queryParam);
       
         if (!query) {
           throw new Error('No query provided.');
@@ -279,7 +295,9 @@ export async function POST(req: NextRequest) {
         }
         const response = TESTMODE ? 
           testResponse :
-          await ask(query, searchData);
+          sanitizeText(await ask(query, searchData));
+
+        !TESTMODE && await logQA(query, response);
     
         console.log(response);
         console.log("Received response! Processing...");
