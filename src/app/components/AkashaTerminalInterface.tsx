@@ -116,16 +116,18 @@ const AkashaTerminalInterface: React.FC = () => {
   const acceptingInput = queryStatus === 'done' || queryStatus === 'error' || queryStatus === '';
 
   return (
-    <div ref={interfaceRef} className={`relative grid grid-rows-6 h-[75vh] w-[70vw] min-w-[250px] max-w-[100vw] transition-all ease-in-out duration-500`}>
-      <div className={`z-30 row-start-4 absolute w-full transition-transform ease-in-out duration-1000 ${moveQueryBarUp && 'transform -translate-y-[37vh]'}`}>
-        <TC.QueryBar handleQuery={handleQuery} acceptingInput={acceptingInput} />
-        {queryBarIsUp && (
-          <div className="z-40 absolute left-[10%] md:left-[15%] lg:left-[28%] mt-2 transition-all ease-in-out duration-500">
-            <TC.StatusBar status={queryStatus} errorMsg={errorMsg} />
-          </div>
-        )}
+    <div ref={interfaceRef} className={`relative grid grid-rows-6 h-[75vh] w-[100vw] md:w-[70vw] min-w-[250px] max-w-[100vw] transition-all ease-in-out duration-500`}>
+      <div className={`z-30 row-start-4 absolute w-full flex flex-col items-start justify-center w-full transition-transform ease-in-out duration-1000 ${moveQueryBarUp && 'transform -translate-y-[37vh]'}`}>
+        <div className="self-center">
+            <TC.QueryBar handleQuery={handleQuery} acceptingInput={acceptingInput} />
+            {queryBarIsUp && (
+              <div className="z-40 mt-2 ml-2 transition-all ease-in-out duration-500">
+                <TC.StatusBar status={queryStatus} errorMsg={errorMsg} />
+              </div>
+            )}
+        </div>
       </div>
-  
+
       {(queryBarIsUp && data.info.length > 0) && (
         <div className="relative row-start-2 row-end-7 h-full max-w-full transition-opacity ease-in-out duration-500 opacity-0 appear opacity-100">
           <TC.DataWordCloud data={data} setAnswerIsReady={setAnswerIsReady} setQueryStatus={setQueryStatus} kill={killWordCloud.current}/>
@@ -138,7 +140,6 @@ const AkashaTerminalInterface: React.FC = () => {
       )}
     </div>
   );
-  
 };
 
 export default AkashaTerminalInterface;
