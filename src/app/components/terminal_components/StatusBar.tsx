@@ -13,7 +13,6 @@ const statusMessages = {
 
 const StatusBar: React.FC<StatusBarProps> = ({ status, errorMsg }) => {
   const [displayString, setDisplayString] = useState('');
-  const [showCursor, setShowCursor] = useState(true);
   const [statusQueue, setStatusQueue] = useState<statusCode[]>([]);
   const [currentStatus, setCurrentStatus] = useState<statusCode>('');
   const [typing, setTyping] = useState(false);
@@ -62,18 +61,10 @@ const StatusBar: React.FC<StatusBarProps> = ({ status, errorMsg }) => {
     }
   }, [currentStatus]);
 
-  // Cursor blinking effect
-  useEffect(() => {
-    const cursorBlink = setInterval(() => {
-      setShowCursor((prevShow) => !prevShow);
-    }, 500); // Speed of cursor blinking, in milliseconds
-    return () => clearInterval(cursorBlink);
-  }, []);
-
   return (
     <div className="font-mono text-green-600 dark:text-green-400">
       {displayString}
-      {showCursor && <span className="inline-block bg-green-600 dark:bg-green-400 w-2 h-[1em] relative top-[2px]"></span>}
+      <span className="inline-block bg-green-600 dark:bg-green-400 w-2 h-[1em] relative top-[2px] cursor-blink"></span>
     </div>
   );
 };

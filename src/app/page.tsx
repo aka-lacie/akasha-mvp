@@ -15,13 +15,15 @@ export default function Home() {
           height={250}
           priority
         />
+
         <div className="z-40 fixed top-[5%] left-[5%] flex flex-col justify-center content-center gap-7 lg:gap-10">
             <DarkModeToggle />
             <i className="fas fa-cog fa-2xl ml-1 mb-4 text-gray-600 dark:text-gray-400 drop-shadow" />
             <i className="far fa-circle-question fa-2xl ml-1 text-gray-500 dark:text-gray-400 drop-shadow" />
         </div>
-        <div className="z-10 w-full items-center justify-between font-mono text-lg lg:absolute lg:left-[10%] lg:flex">
-          <div className="ml-10 flex w-auto justify-center dark:from-inherit lg:static lg:w-auto lg:ml-10">
+        
+        <div className="z-10 w-auto items-center justify-between font-mono text-lg xl:absolute xl:top-[5%] xl:left-[10%] xl:flex">
+          <div className="ml-10 flex w-auto justify-center dark:from-inherit lg:static">
             <div className="text-center">
               <h1 className="text-4xl font-bold font-serif">AKASHA</h1>
               <h2 className="text-2xl font-medium">-Terminal-</h2>
@@ -32,7 +34,6 @@ export default function Home() {
 
         <AkashaTerminalInterface />
         
-
         <div className="z-40 static bottom-0 left-0 mt-10 flex flex-col font-mono gap-4">
             <p className="flex whitespace-nowrap place-items-center p-0 lg:p-0">
               Knowledge cutoff: version 4.0

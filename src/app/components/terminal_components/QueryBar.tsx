@@ -39,7 +39,7 @@ const QueryBar: React.FC<QueryBarProps> = ({ handleQuery, acceptingInput }) => {
         className="flex rounded-full overflow-hidden transition-all"
       >
         <input
-          className={`flex-grow py-2 px-4 rounded-l-full text-black dark:text-white focus:outline-none bg-white dark:bg-gray-700 transition-all ease-in-out duration-300 w-64 ${isExpanded && 'md:w-96'}`}
+          className={`flex-grow py-2 px-4 rounded-l-full text-black dark:text-white focus:outline-none bg-white dark:bg-gray-700 transition-all ease-in-out duration-300 w-52 ${isExpanded && 'md:w-96'}`}
           type="text"
           placeholder="Search the Irminsul..."
           maxLength={100}
