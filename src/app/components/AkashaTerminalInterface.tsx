@@ -19,6 +19,15 @@ const AkashaTerminalInterface: React.FC = () => {
   const interfaceRef = useRef<HTMLDivElement>(null);
   const killWordCloud = useRef<boolean>(false);
 
+  useEffect(() => {
+    // if url param is present, set access code
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessCode = urlParams.get('access_code');
+    if (accessCode) {
+      localStorage.setItem('accessCode', accessCode);
+    }
+  }, []);
+
   const handleQuery = async (query: string) => {
     if (!query) {
       console.error('This should never occur because the button should be disabled if the query is empty');
