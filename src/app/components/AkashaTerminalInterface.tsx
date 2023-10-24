@@ -126,7 +126,7 @@ const AkashaTerminalInterface: React.FC = () => {
 
   return (
     <div ref={interfaceRef} className={`relative grid grid-rows-6 h-[75vh] w-[100vw] md:w-[70vw] min-w-[250px] max-w-[100vw] transition-all ease-in-out duration-500`}>
-      <div className={`z-30 row-start-4 absolute w-full flex flex-col items-start justify-center w-full transition-transform ease-in-out duration-1000 ${moveQueryBarUp && 'transform -translate-y-[37vh]'}`}>
+      <div className={`z-30 row-start-4 absolute w-full flex flex-col items-start justify-center transition-transform ease-in-out duration-1000 ${moveQueryBarUp && 'transform -translate-y-[37vh]'}`}>
         <div className="self-center">
             <TC.QueryBar handleQuery={handleQuery} acceptingInput={acceptingInput} />
             {queryBarIsUp && (

@@ -8,7 +8,7 @@ export default function HelpModal({ toggleModal }: { toggleModal: () => void }) 
     >
       {/* Modal content */}
       <div 
-        className="bg-gray-300 dark:bg-gray-600 rounded-lg p-6 w-96 shadow-lg relative lg:self-center slide-in"
+        className="bg-gray-300 dark:bg-gray-600 rounded-lg p-6 w-96 shadow-lg relative lg:self-center slide-in max-h-full overflow-y-scroll lg:overflow-visible"
         onClick={e => e.stopPropagation()}
       >
         
@@ -21,16 +21,19 @@ export default function HelpModal({ toggleModal }: { toggleModal: () => void }) 
         </button>
 
         {/* Rest of the content goes here */}
-        <p><i>Akasha Terminal is a powerful & smart search engine privvy to events, people, and things in Teyvat. Simply ask a question and allow Akasha to work its magic.</i></p>
+        <p><i>Akasha Terminal is a powerful & smart search engine knowledgeable about events, people, and things in Teyvat. Simply ask a question and allow Akasha to work its magic.</i></p>
         <br />
-        <p><b>What can/can't I ask about?</b></p>
-        <p>Ask about anything related to Genshin Impact lore. However, there are no plans to add gameplay knowledge.</p>
+        <p><b>What should I ask about?</b></p>
+        <p>Ask about anything related to Genshin Impact's lore.</p>
+        <br />
+        <p><b>What are the limitations?</b></p>
+        <p>There are no plans to address gameplay knowledge, and English is the only supported language. Querying outside of the intended scope may cause hallucinations.</p>
         <br />
         <p><b>Can I look up Forbidden Knowledge?</b></p>
         <p>Yes, this advanced version of the Terminal has special privileges and access to even knowledge that has been erased from the Irminsul. However, one type of Forbidden Knowledge that is not included is current patch spoilers, for it is too dangerous. Mind the knowledge cutoff at the bottom of the page.</p>
         <br />
         <p><b>How does this work?</b></p>
-        <p>Akasha is an application built using a large language model (LLM) supplemented with retrieval-augmented generation (RAG). Currently the knowledge-base is curated from Genshin Wiki.</p>
+        <p>Akasha is an application built using a large language model (LLM) with retrieval-augmented generation (RAG). Currently the knowledge-base is curated from Genshin Wiki.</p>
         <br />
 
         <p><b>Contact</b></p>
