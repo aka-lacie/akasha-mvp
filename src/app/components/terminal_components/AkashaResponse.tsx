@@ -31,7 +31,7 @@ const AkashaResponse: React.FC<AkashaResponseProps> = ({ answer }) => {
   return (
     <div className="answerBubbleOpen flex flex-col">
       <div
-        className="text-sm text-center textClip min-w-[12rem] max-w-prose max-h-[40vh] overflow-y-scroll lg:max-h-none lg:overflow-visible"
+        className="text-sm text-center textClip min-w-[12rem] max-w-prose max-h-[40vh] overflow-auto lg:max-h-none"
         ref={scrollRef}
         onScroll={handleScroll}
       >
