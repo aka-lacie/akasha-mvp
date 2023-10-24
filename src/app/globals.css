@@ -182,3 +182,18 @@ body {
     opacity: 1;
   }
 }
+
+.slide-in {
+  animation: slideIn 0.5s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0%;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 100%;
+    transform: translateX(0);
+  }
+}

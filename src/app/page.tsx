@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import AkashaTerminalInterface from './components/AkashaTerminalInterface'
 import { ThemeProvider } from './components/ThemeProvider'
-import DarkModeToggle from './components/DarkModeToggle'
+import Sidebar from './components/sidebar_components/Sidebar'
 
 export default function Home() {
   return (
@@ -15,13 +15,9 @@ export default function Home() {
           height={250}
           priority
         />
-
-        <div className="z-40 fixed top-[5%] left-[5%] flex flex-col justify-center content-center gap-7 lg:gap-10">
-            <DarkModeToggle />
-            <i className="fas fa-cog fa-2xl ml-1 mb-4 text-gray-600 dark:text-gray-400 drop-shadow" />
-            <i className="far fa-circle-question fa-2xl ml-1 text-gray-500 dark:text-gray-400 drop-shadow" />
-        </div>
         
+        <Sidebar />
+
         <div className="z-10 w-auto items-center justify-between font-mono text-lg xl:absolute xl:top-[5%] xl:left-[10%] xl:flex">
           <div className="ml-10 flex w-auto justify-center dark:from-inherit lg:static">
             <div className="text-center">
