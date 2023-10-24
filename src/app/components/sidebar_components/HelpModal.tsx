@@ -8,7 +8,7 @@ export default function HelpModal({ toggleModal }: { toggleModal: () => void }) 
     >
       {/* Modal content */}
       <div 
-        className="bg-gray-300 dark:bg-gray-600 rounded-lg p-6 w-96 shadow-lg relative lg:self-center slide-in max-h-full overflow-y-scroll lg:overflow-visible"
+        className="bg-gray-300 dark:bg-gray-600 rounded-lg p-6 w-96 shadow-lg relative lg:self-center slide-in max-h-full overflow-auto"
         onClick={e => e.stopPropagation()}
       >
         
