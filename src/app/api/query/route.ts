@@ -4,7 +4,7 @@ import { OpenAI } from 'openai';
 
 // MODELS
 const EMBEDDING_MODEL = 'text-embedding-ada-002'
-const GPT_MODEL = 'gpt-3.5-turbo-16k'
+const GPT_MODEL = 'gpt-3.5-turbo-1106'
 
 // CONFIG
 const openai = new OpenAI()
