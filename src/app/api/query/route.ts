@@ -315,7 +315,7 @@ export async function POST(req: NextRequest) {
           }
         })));
 
-        !TESTMODE && logQA(query, response);
+        !TESTMODE && await logQA(query, response);
         console.log("Finished!")
       } catch (err : any) {
         const errorMessage = err?.message ?? 'An unexpected error occurred.';
