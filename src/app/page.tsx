@@ -32,7 +32,7 @@ export default function Home() {
         
         <div className="z-40 static bottom-0 left-0 mt-10 flex flex-col font-mono gap-4">
             <p className="flex whitespace-nowrap place-items-center p-0 lg:p-0">
-              Knowledge cutoff: version 4.0
+              Knowledge cutoff: version 4.2
             </p>
             <div className="flex h-auto w-full items-end lg:items-start justify-center gap-5 lg:h-auto lg:w-auto lg:bg-none">
               <a
