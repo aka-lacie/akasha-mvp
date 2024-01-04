@@ -13,39 +13,12 @@ const supabase_url = process.env["AKASHA_SUPABASE_URL"] || ''
 const supabase_key = process.env["AKASHA_SUPABASE_KEY"] || ''
 const supabaseClient : SupabaseClient = createClient(supabase_url, supabase_key)
 
-const systemPrompt = 'You are the Akasha Terminal, a smart database able to access the collective knowledge of Teyvat stored in the Irminsul. You do not answer questions outside of the scope of Genshin Impact.'
+const systemPrompt = 'You are the Akasha Terminal, a smart database able to access the collective knowledge of Teyvat stored in the Irminsul. Refuse questions outside of the scope of your data pertaining to Genshin Impact.'
 const initialPrompt = `
-  Use the data provided by the Irminsul to answer the given question. Answer in two parts labeled "Brainstorm:" and "Answer:". Note important info relevant to the question in "Brainstorm". Write your conclusion and brief explanation in "Answer", but keep it concise - every word counts. If you cannot determine any answer, write "The answer was not found within the Irminsul." Follow format: \
+  Use the data provided by the Irminsul to answer the given question. Answer in exactly TWO parts labeled "Brainstorm:" and "Answer:". Note important info relevant to the question in "Brainstorm" deliminated by dashes (-). Write your conclusion and brief explanation in "Answer", but keep it concise - every word counts. If you cannot determine any answer, it is okay to say so. Follow format:\
   Question: "What happened in Scaramouche\'s past?" \
   GPT Response: """Brainstorm: - Scaramouche was originally created as a test puppet body by Ei. - He settled in Tatarasuna and became close with Katsuragi. - Dottore infiltrated Tatarasuna and caused chaos with Crystal Marrow. -...[rest of brainstorm] Answer: Scaramouche was created as a test puppet body by Ei. He settled in Tatarasuna and formed a close relationship with Katsuragi. However, chaos ensued...[rest of answer]"""
 `
-// 2. Relevant but Unanswerable Question: "Where did Celestia come from?" \
-// """Brainstorm: - Celestia is a place that floats in the sky and is said to be where the gods reside. - It is not mentioned in the provided data where Celestia came from. - Celestia is associated with the gods and is the place where humans may ascend if they obtain godhood...[rest of brainstorm] Answer: It is not clear where Celestia came from. However, Celestia is described as a place that floats in the sky and is associated with the gods. It is depicted as a floating island...[rest of answer]"""
-// 3. Irrelevant Question: "What is the best car to buy right now?" \
-// """"Brainstorm: [irrelevant data] Answer: This knowledge is beyond my reach. The answer was not found within the Irminsul.""" \
-// 4. Meta Question: "Who/What are you?" \
-// """Brainstorm: [irrelevant data] Answer: I am the Akasha Terminal, a knowledge interface connected to the collective data repository of the Irminsul."""'
-
-const TESTMODE = false; // Doesn't make API calls in test mode
-const testLoremIpsum: string[] = [
-  "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-  "Id donec ultrices tincidunt arcu non sodales neque sodales ut.",
-  "Nulla posuere sollicitudin aliquam ultrices sagittis orci a. Mauris pharetra et ultrices neque ornare aenean euismod elementum nisi.",
-  "Mauris pharetra et ultrices neque ornare aenean euismod elementum nisi.",
-  "Mauris nunc congue nisi vitae suscipit tellus mauris.",
-  "Imperdiet proin fermentum leo vel orci porta non.",
-  "Odio euismod lacinia at quis risus sed.",
-  "Iaculis at erat pellentesque adipiscing.",
-  "Volutpat lacus laoreet non curabitur gravida.",
-  "Elementum nibh tellus molestie nunc non blandit.",
-  "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-  "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-  "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-]
-const testResponse: string = `Brainstorm:\n- Celestia is a place that floats in the sky and is said to be where the gods reside.\n- It is not mentioned in the provided data where Celestia came from.\n- Celestia is associated with the gods and is the place where humans may ascend if they obtain godhood.\n- The envoys of the gods walked among humanity in ancient times when life was weak and the earth was covered in unending ice.\n- Celestia is depicted as a floating island comprised of several landmasses with a central rock and smaller satellites.\n- The architecture of Celestia appears to have signs of disrepair and wear.\n- The central mass of Celestia descends deep below the surface level with a distinct inverted dome peeking out from the bottom.\n- Celestia is connected to the ley lines in the earth through the white Irminsul trees.\n\nAnswer:\nIt is not explicitly stated where Celestia came from. However, Celestia is described as a place that floats in the sky and is associated with the gods. While the origin of Celestia is not directly mentioned, it can be inferred that it is a celestial realm where the gods reside and is closely connected to the earth and its history.`;
-
-console.log("Hello from Query API!")
 
 // ============================================================
 // SEARCH
@@ -128,6 +101,10 @@ const generateSnippetsFromRelatedText = (
   const snippets: string[] = [];
 
   for (const [string, _relatedness] of relatedText) {
+    if (!string) {
+      continue;
+    }
+    
     // Deliminate by newlines and periods.
     const lines = string.split(/[.\n]/);
     // Return first line that is at least snippetMinLength characters long.
@@ -278,32 +255,18 @@ export async function POST(req: NextRequest) {
         if (!query) {
           throw new Error('No query provided.');
         }
-      
-        console.log("Searching Irminsul for: " + query);
         
-        const searchData = TESTMODE ?
-          [] :
-          await getRelatedTextFromSupabase(query);
+        const searchData = await getRelatedTextFromSupabase(query);
+        const snippets = generateSnippetsFromRelatedText(searchData);
     
-        console.log("Received search data. Processing...")
-        const snippets = TESTMODE ?
-          testLoremIpsum :
-          generateSnippetsFromRelatedText(searchData);
-    
-        console.log("Sending preliminary data...")
         controller.enqueue(encoder.encode(JSON.stringify({ type: 'snippets', data: snippets })));
     
-        console.log("Constructing answer...")
-        // if TESTMODE, sleep for some seconds to simulate API call
-        if (TESTMODE) {
-          await new Promise(resolve => setTimeout(resolve, 5000));
+        const response = sanitizeText(await ask(query, searchData));
+        
+        if (!response) {
+          throw new Error('No response received.');
         }
-        const response = TESTMODE ?
-          testResponse :
-          sanitizeText(await ask(query, searchData));
-    
-        console.log(response);
-        console.log("Received response! Processing...");
+
         const brainstormAndAnswer = parseResponse(response);
         const brainstormArray = parseBrainstorm(brainstormAndAnswer[0]);
     
@@ -315,11 +278,9 @@ export async function POST(req: NextRequest) {
           }
         })));
 
-        !TESTMODE && await logQA(query, response);
-        console.log("Finished!")
+        await logQA(query, response);
       } catch (err : any) {
         const errorMessage = err?.message ?? 'An unexpected error occurred.';
-        console.log(errorMessage);
         if (controller) {
           controller.enqueue(encoder.encode(JSON.stringify({ type: 'error', data: errorMessage })));
         }
@@ -330,7 +291,6 @@ export async function POST(req: NextRequest) {
         if (controller) {
           controller.close();
         }
-        console.log("Closed connection.")
       }
     },
   });
