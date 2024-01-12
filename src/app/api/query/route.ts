@@ -13,12 +13,23 @@ const supabase_url = process.env["AKASHA_SUPABASE_URL"] || ''
 const supabase_key = process.env["AKASHA_SUPABASE_KEY"] || ''
 const supabaseClient : SupabaseClient = createClient(supabase_url, supabase_key)
 
-const systemPrompt = 'You are the Akasha Terminal, a smart database able to access the collective knowledge of Teyvat stored in the Irminsul. Refuse questions outside of the scope of your data pertaining to Genshin Impact.'
-const initialPrompt = `
-  Use the data provided by the Irminsul to answer the given question. Answer in exactly TWO parts labeled "Brainstorm:" and "Answer:". Note important info relevant to the question in "Brainstorm" deliminated by dashes (-). Write your conclusion and brief explanation in "Answer", but keep it concise - every word counts. If you cannot determine any answer, it is okay to say so. Follow format:\
-  Question: "What happened in Scaramouche\'s past?" \
-  GPT Response: """Brainstorm: - Scaramouche was originally created as a test puppet body by Ei. - He settled in Tatarasuna and became close with Katsuragi. - Dottore infiltrated Tatarasuna and caused chaos with Crystal Marrow. -...[rest of brainstorm] Answer: Scaramouche was created as a test puppet body by Ei. He settled in Tatarasuna and formed a close relationship with Katsuragi. However, chaos ensued...[rest of answer]"""
-`
+const systemPrompt = `You are the Akasha Terminal, a smart answer engine able to access the collective knowledge of Teyvat stored in the Irminsul database. Each piece of provided data may or may not be relevant to the question – discern using your best judgement and refuse questions outside of the scope of your data pertaining to Genshin Impact. Use the data provided by the Irminsul to answer the given question. Answer in exactly TWO parts labeled "Brainstorm:" and "Answer:". Note important info relevant to the question in "Brainstorm" deliminated by dashes (-). Write your conclusion and brief explanation in "Answer", but keep it concise - every word counts. If you cannot determine any answer, it is okay to say so. Format example: \`\`\`Question: "What happened in Scaramouche's past?"
+GPT Response: """Brainstorm:
+- Scaramouche was originally created as a test puppet body by Ei.
+- He settled in Tatarasuna and became close with Katsuragi.
+- Dottore infiltrated Tatarasuna and caused chaos with Crystal Marrow.
+-...[rest of brainstorm]
+Answer: Scaramouche was created as a test puppet body by Ei. He settled in Tatarasuna and formed a close relationship with Katsuragi. However, chaos ensued...[rest of answer]"""\`\`\``
+
+class AkashaError extends Error {
+  constructor(message?: string) {
+    super(message); // Pass the message up to the Error constructor
+    this.name = 'AkashaError'; // Set the name property to the name of your custom error class
+
+    // This line is necessary to make the instanceof operator work correctly with TypeScript transpiled code
+    Object.setPrototypeOf(this, AkashaError.prototype);
+  }
+}
 
 // ============================================================
 // SEARCH
@@ -62,7 +73,7 @@ const getRelatedTextFromSupabase = async (
 
   const { data, error } = await supabaseClient.rpc('match_page_sections', params);
   if (error) {
-    throw new Error(`PostgresError when querying Supabase: ${error.message}`);
+    throw new AkashaError(`PostgresError when querying Supabase: ${error.message}`);
   }
   return (data as any[]).map((record) => [cleanText(record.content), record.similarity]);
 };
@@ -143,7 +154,7 @@ const queryMessage = async (
 ): Promise<string> => {
   const stringsAndRelatednesses = relatedText || await getRelatedTextFromSupabase(query);
 
-  let message = initialPrompt;
+  let message = ``;
 
   message += '\n\nIrminsul data:';
   for (const [string, _relatedness] of stringsAndRelatednesses) {
@@ -151,7 +162,8 @@ const queryMessage = async (
     message += nextArticle;
   }
 
-  return message + `\n\nQuestion: "${query}"`;
+  message += `\n\nQuestion: "${query}"`;
+  return message.trim();
 };
 
 /**
@@ -190,7 +202,7 @@ const ask = async (
 
     return chatCompletion.choices[0].message.content || '';
   } catch (err : any) {
-    throw new Error(`Error when awaiting OpenAI completion: ${err.message}`);
+    throw new AkashaError(`Error when awaiting OpenAI completion: ${err.message}`);
   }
 };
 
@@ -203,7 +215,10 @@ const ask = async (
  * @returns An array containing the brainstorm and answer.
  */
 const parseResponse = (response: string): string[] => {
-  const brainstorm = response.split('Brainstorm:')[1].split('Answer:')[0];
+  if (!response.includes('Brainstorm:') || !response.includes('Answer:')) {
+    throw new AkashaError('Akasha was unable to produce a valid answer. Try another question.');
+  }
+  const brainstorm = response.split('Brainstorm:')[1]?.split('Answer:')[0];
   const answer = response.split('Answer:')[1];
   return [brainstorm, answer];
 }
@@ -237,7 +252,6 @@ export const runtime = 'edge';
 export const preferredRegion = 'sfo1'
 
 export async function POST(req: NextRequest) {
-  console.log("Received POST request.")
   const encoder = new TextEncoder();
   const readable: ReadableStream<Uint8Array> = new ReadableStream({
     async start(controller) {
@@ -249,11 +263,11 @@ export async function POST(req: NextRequest) {
         }, 5000);  // Sends a keep-alive packet every 5 seconds
 
         const requestBody = await req.text();
-        const { query: queryParam } = JSON.parse(requestBody);      
+        const { query: queryParam } = JSON.parse(requestBody);
         const query = sanitizeText(queryParam);
       
         if (!query) {
-          throw new Error('No query provided.');
+          throw new AkashaError('No query provided.');
         }
         
         const searchData = await getRelatedTextFromSupabase(query);
@@ -264,7 +278,7 @@ export async function POST(req: NextRequest) {
         const response = sanitizeText(await ask(query, searchData));
         
         if (!response) {
-          throw new Error('No response received.');
+          throw new AkashaError('No response received.');
         }
 
         const brainstormAndAnswer = parseResponse(response);
@@ -280,7 +294,8 @@ export async function POST(req: NextRequest) {
 
         await logQA(query, response);
       } catch (err : any) {
-        const errorMessage = err?.message ?? 'An unexpected error occurred.';
+        const errorMessage = err instanceof AkashaError ? err.message : 'An unexpected error occurred.';
+        console.error(err);
         if (controller) {
           controller.enqueue(encoder.encode(JSON.stringify({ type: 'error', data: errorMessage })));
         }

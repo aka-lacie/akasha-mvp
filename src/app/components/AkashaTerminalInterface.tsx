@@ -50,7 +50,7 @@ const AkashaTerminalInterface: React.FC = () => {
     const response = await fetch(`/api/query`, {
       method: 'POST',
       headers: { 
-          'Access-Code': localStorage.getItem('accessCode') || '',
+          'Access-Code': localStorage.getItem('accessCode') || "akasha-web-client",
           'Content-Type': 'application/json',
       },
       body: JSON.stringify({ query }),
