@@ -10,7 +10,9 @@ export default function SettingsModal() {
     localStorage.setItem("accessCode", accessCode);
   };
 
-  const accessCodeFromStorage = localStorage.getItem('accessCode');
+  const accessCodeFromStorage = typeof window !== 'undefined' && window.localStorage 
+    ? localStorage.getItem('accessCode') 
+    : null;
   const placeholder = accessCodeFromStorage 
     ? accessCodeFromStorage.split('-')[0] + "-****" 
     : "Enter optional code";
