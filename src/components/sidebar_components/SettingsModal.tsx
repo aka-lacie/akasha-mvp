@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Button } from "@/app/components/sidebar_components/ui/button";
-import { DialogTrigger, DialogTitle, DialogHeader, DialogFooter, DialogContent, DialogClose, Dialog } from "@/app/components/sidebar_components/ui/dialog";
-import { Input } from "@/app/components/sidebar_components/ui/input";
+import { Button } from "@/components/ui/button";
+import { DialogTrigger, DialogTitle, DialogHeader, DialogFooter, DialogContent, DialogClose, Dialog } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 export default function SettingsModal() {
   const [accessCode, setAccessCode] = useState("");
