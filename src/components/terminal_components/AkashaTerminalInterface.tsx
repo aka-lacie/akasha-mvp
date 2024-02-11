@@ -32,7 +32,7 @@ const AkashaTerminalInterface: React.FC = () => {
   }, []);
 
   const handleQuery = async (query: string) => {
-    if (!query) {
+    if (!query && process.env['CURR_ENV'] === 'DEV') {
       console.error('This should never occur because the button should be disabled if the query is empty');
       return;
     }
