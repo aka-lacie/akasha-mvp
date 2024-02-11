@@ -48,6 +48,13 @@ const checkIPRateLimit = async (req: NextRequest, tier: string) => {
 }
 
 const middleware = async (req: NextRequest) => {
+  // deny access to mock query endpoint in production  
+  if (req.url.includes('mock_query') && process.env["CURR_ENV"] === 'PROD') {
+    return new NextResponse(JSON.stringify({ type: 'error', data: 'This endpoint is not available in production.' }), {
+      headers: { 'Content-Type': 'text/event-stream' },
+    });
+  }
+
   // Check for access code
   const tier = checkAccessCode(req);
   if (!tier) {

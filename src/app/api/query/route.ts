@@ -295,7 +295,9 @@ export async function POST(req: NextRequest) {
         await logQA(query, response);
       } catch (err : any) {
         const errorMessage = err instanceof AkashaError ? err.message : 'An unexpected error occurred.';
-        console.error(err);
+        if(process.env["CURR_ENV"] === 'DEV'){
+          console.error(err);
+        }
         if (controller) {
           controller.enqueue(encoder.encode(JSON.stringify({ type: 'error', data: errorMessage })));
         }
