@@ -29,16 +29,16 @@ const AkashaResponse: React.FC<AkashaResponseProps> = ({ answer }) => {
   };
 
   return (
-    <div className="answerBubbleOpen flex flex-col">
+    <div className="answerBubbleOpen responsiveWidth flex flex-col items-center">
       <div
-        className="text-sm text-center textClip min-w-[12rem] max-w-prose max-h-[40vh] overflow-auto lg:max-h-none"
+        className="text-sm text-center textClip max-h-[30vh] overflow-y-scroll"
         ref={scrollRef}
         onScroll={handleScroll}
       >
         <ReconstructingText targetString={answer} />
       </div>
       {showScrollDown && (
-        <div className="animate-bounce bg-white dark:bg-slate-800 p-2 w-10 h-10 ring-1 ring-slate-900/5 dark:ring-slate-200/20 shadow-lg rounded-full flex self-center items-center justify-center">
+        <div className="absolute -bottom-10 animate-bounce bg-white dark:bg-slate-800 p-2 w-10 h-10 ring-1 ring-slate-900/5 dark:ring-slate-200/20 shadow-lg rounded-full flex self-center items-center justify-center">
           <button
             onClick={handleScrollDown}
           >
