@@ -51,9 +51,7 @@ const AkashaTerminalInterface: React.FC = () => {
     setErrorMsg('');
     killWordCloud.current = false;
 
-    // TODO: CHANGE MOCK QUERY BACK TO REAL QUERY
-    // DO NOT LET THIS GET PAST CODE REVIEW!!!
-    const response = await fetch(`/mock/api/query`, {
+    const response = await fetch(`/api/query`, {
       method: 'POST',
       headers: { 
           'Access-Code': localStorage.getItem('accessCode') || "akasha-web-client",

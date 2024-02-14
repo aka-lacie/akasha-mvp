@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server';
 // this is enforced by our route middleware
 
 // USAGE:
-// modify any fetch request from api/query to api/mock_query
+// to mock a fetch request to "/api/query" change it to "/mock/api/query"
 // send the string 'short' as the query to get a short response
 
 // NOTE:
