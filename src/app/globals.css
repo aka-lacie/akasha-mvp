@@ -2,12 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+  box-sizing: border-box;
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 255, 255, 255;
   --background-end-rgb: 0, 128, 0;
   --word-cloud-green-color: green;
   --answer-bubble-rgb: 194, 248, 214;
+  --ios-overscroll-color: white;
 }
 
 .dark {
@@ -16,13 +21,24 @@
   --background-end-rgb: 0, 0, 0;
   --word-cloud-green-color: #00ff00;
   --answer-bubble-rgb: 23, 51, 3;
+  --ios-overscroll-color: black;
 }
 
+main {
+  color: rgb(var(--foreground-rgb));
+  background:
+    rgb(var(--background-start-rgb))
+    linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    );
+  transition: 0.3s linear;
+}
+
+/* this is a hack to make the overscroll color on ios not be ugly on dark mode */
 body {
-  background: linear-gradient(
-    rgb(var(--background-start-rgb)),
-    rgb(var(--background-end-rgb))
-  );
+  background: var(--ios-overscroll-color);
 }
 
 .appear {
@@ -37,6 +53,12 @@ body {
   100% {
     opacity: 1;
   }
+}
+
+.transitionHeight{
+  transition-property: min-height, max-height;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 500ms;
 }
 
 /* DataWordCloud */
@@ -107,7 +129,6 @@ body {
 /* AkashaResponse */
 .answerBubbleOpen {
   position: relative;
-  box-sizing: border-box;
 }
 
 .answerBubbleOpen::before {
@@ -117,9 +138,8 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(ellipse at center, rgb(var(--answer-bubble-rgb), 1) 0%, rgb(var(--answer-bubble-rgb), 1) 55%, rgba(255, 255, 255, 0) 70%);
-  z-index: -1;
-  transform-origin: center;
+  background-image: radial-gradient(ellipse at center, rgb(var(--answer-bubble-rgb), 1) 0%, rgb(var(--answer-bubble-rgb), 1) 55%, rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
   transform: scale(0.1, 0.1);
   opacity: 0.8;
   animation: expandMask 4s ease-in-out forwards,
@@ -133,9 +153,9 @@ body {
 
 @keyframes expandMask {
   0% { transform: scale(0.1, 0.1); }
-  30% { transform: scale(0.3, 1.8); }
-  90% { transform: scale(1.8, 1.8); }
-  100% { transform: scale(1.8, 1.8); }
+  30% { transform: scale(0.3, 1.6); }
+  90% { transform: scale(1.6, 1.6); }
+  100% { transform: scale(1.6, 1.6); }
 }
 
 @keyframes bubblePulse {
@@ -192,4 +212,19 @@ body {
     opacity: 100%;
     transform: translateX(0);
   }
+}
+
+/*
+this is here to remove the horizontal scrollbar
+for the suggested queries box that is only visible
+on small screen widths. would probably make sense
+to use a media query here, but right now, it doesn't
+make a difference.
+*/
+div::-webkit-scrollbar {
+  display: none;
+}
+
+.responsiveWidth {
+  max-width: min(600px, 70vw);
 }

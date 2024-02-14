@@ -148,7 +148,7 @@ const DataWordCloud: React.FC<DataWordCloudProps> = ({ data, setAnswerIsReady, s
   }, [startBrainstormCollapse]);
 
   return (
-    <div className={`relative h-full max-w-full text-white overflow-hidden md:overflow-visible`}>
+    <div className={`relative translate-y-[100px] text-white`}>
 
       {/* <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-500 w-4 h-4 rounded-full"></div> */}
 
