@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import * as TC from './terminal_components';
+import QueryBar from './QueryBar';
+import StatusBar from './StatusBar';
+import DataWordCloud from './DataWordCloud';
+import AkashaResponse from './AkashaResponse';
+import { cn } from '@/lib/utils';
 
 interface DataCloudInputType {
   type: 'snippets' | 'brainstorm' | '',
@@ -29,7 +33,7 @@ const AkashaTerminalInterface: React.FC = () => {
   }, []);
 
   const handleQuery = async (query: string) => {
-    if (!query) {
+    if (!query && process.env['CURR_ENV'] === 'DEV') {
       console.error('This should never occur because the button should be disabled if the query is empty');
       return;
     }
@@ -63,11 +67,10 @@ const AkashaTerminalInterface: React.FC = () => {
 
     const decoder = new TextDecoder();
     let heartbeatTimeout;
-    
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      
       const message = JSON.parse(decoder.decode(value));
       switch (message.type) {
         case 'keep-alive':
@@ -125,24 +128,34 @@ const AkashaTerminalInterface: React.FC = () => {
   const acceptingInput = queryStatus === 'done' || queryStatus === 'error' || queryStatus === '';
 
   return (
-    <div ref={interfaceRef} className={`relative grid grid-rows-6 h-[75vh] w-[100vw] md:w-[70vw] min-w-[250px] max-w-[100vw] transition-all ease-in-out duration-500`}>
-      <div className={`z-30 row-start-4 absolute w-full flex flex-col items-start justify-center transition-transform ease-in-out duration-1000 ${moveQueryBarUp && 'transform -translate-y-[37vh]'}`}>
-        <div className="self-center">
-            <TC.QueryBar handleQuery={handleQuery} acceptingInput={acceptingInput} />
-            {queryBarIsUp && (
-              <div className="z-40 mt-2 ml-2 transition-all ease-in-out duration-500">
-                <TC.StatusBar status={queryStatus} errorMsg={errorMsg} />
-              </div>
-            )}
-        </div>
+    <div ref={interfaceRef} className={cn(queryStatus!=='' ?
+      'min-h-[50%] max-h-[50%] md:min-h-[40%] md:max-h-[40%]' :
+      'min-h-[20%] max-h-[20%] md:min-h-[0%] md:max-h-[0%]'
+    , 'transitionHeight')}>
+      <div className={cn(`flex flex-col
+        transition-transform
+        ease-in-out duration-1000`)
+      }>
+        <QueryBar handleQuery={handleQuery} acceptingInput={acceptingInput} />
+        {queryBarIsUp && (
+          <>
+          <div className='p-2' />
+          <div className='flex justify-center'>
+            <div className="transition-all ease-in-out duration-500 responsiveWidth">
+              <StatusBar status={queryStatus} errorMsg={errorMsg} />
+            </div>
+          </div>
+          </>
+        )}
       </div>
 
       {(queryBarIsUp && data.info.length > 0) && (
-        <div className="relative row-start-2 row-end-7 h-full max-w-full transition-opacity ease-in-out duration-500 opacity-0 appear opacity-100">
-          <TC.DataWordCloud data={data} setAnswerIsReady={setAnswerIsReady} setQueryStatus={setQueryStatus} kill={killWordCloud.current}/>
+        <div className="transition-opacity ease-in-out duration-500 appear opacity-100">
+          <div className='py-6 sm:py-[5vh]' />
+          <DataWordCloud data={data} setAnswerIsReady={setAnswerIsReady} setQueryStatus={setQueryStatus} kill={killWordCloud.current}/>
           {answerIsReady && (
-            <div className="z-20 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-opacity ease-in-out duration-500 opacity-0 appear opacity-100">
-              <TC.AkashaResponse answer={answer} />
+            <div className="flex justify-center relative transform transition-opacity ease-in-out duration-500 appear opacity-100 ">
+              <AkashaResponse answer={answer} />
             </div>
           )}
         </div>

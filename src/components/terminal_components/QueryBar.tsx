@@ -1,14 +1,22 @@
 import { useState } from 'react';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import SearchSuggestions from './SearchSuggestions';
 
 const QueryBar: React.FC<QueryBarProps> = ({ handleQuery, acceptingInput }) => {
   const [query, setQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
+  // when a query is submitted, this value is set to true, causing the search suggestions to be hidden
+  const [handledFirstQuery, setHandledFirstQuery] = useState(false);
+
+  // the prop 'handleQuery' must never be called directly
+  // instead, use this function to ensure that the search suggestions are simultaneously hidden
+  const handleQueryAndHideSuggestions = (query: string) => {handleQuery(query); setHandledFirstQuery(true)};
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!isQueryEmpty && acceptingInput) {
-      handleQuery(query.trim());
+      handleQueryAndHideSuggestions(query.trim());
     }
   };
 
@@ -23,7 +31,7 @@ const QueryBar: React.FC<QueryBarProps> = ({ handleQuery, acceptingInput }) => {
   const isQueryEmpty = !query.trim().replace(/[^a-zA-Z]/g, '');
   const isExpanded = isFocused || !isQueryEmpty;
 
-  return (
+  return (<>
     <div className={`flex justify-center`}>
       <form
         onSubmit={handleSubmit}
@@ -36,7 +44,11 @@ const QueryBar: React.FC<QueryBarProps> = ({ handleQuery, acceptingInput }) => {
           maxLength={100}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          onChange={(e) => setQuery(e.target.value)}
+          value={query}
+          onChange={(e) => {
+            e.preventDefault();
+            setQuery(e.target.value);
+          }}
         />
         <button
           type="submit"
@@ -47,7 +59,16 @@ const QueryBar: React.FC<QueryBarProps> = ({ handleQuery, acceptingInput }) => {
         </button>
       </form>
     </div>
-  );
+    <div className='flex justify-center'>
+      <SearchSuggestions
+        hide={handledFirstQuery}
+        clickSuggestion={(suggestedQuery)=>{
+          handleQueryAndHideSuggestions(suggestedQuery)
+          setQuery(suggestedQuery)
+        }}
+      />
+    </div>
+  </>);
 };
 
 export default QueryBar;

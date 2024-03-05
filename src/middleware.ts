@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Ratelimit } from '@upstash/ratelimit';
 import { kv } from '@vercel/kv';
 
-export const config = {
-  matcher: '/api/:path*',
-};
+// export const config = {
+//   matcher: '/'
+// };
 
 const ipCache = new Map<string, number>();
 
@@ -48,20 +48,29 @@ const checkIPRateLimit = async (req: NextRequest, tier: string) => {
 }
 
 const middleware = async (req: NextRequest) => {
-  // Check for access code
-  const tier = checkAccessCode(req);
-  if (!tier) {
-    return new NextResponse(JSON.stringify({ type: 'error', data: 'Please provide a valid access code.' }), {
+
+  if (req.nextUrl.pathname.startsWith('/mock') && process.env["CURR_ENV"] === 'PROD') {
+    return new NextResponse(JSON.stringify({ type: 'error', data: 'ERROR' }), {
       headers: { 'Content-Type': 'text/event-stream' },
     });
   }
 
-  // Check for rate limit, or pass if celesia tier
-  const passed = tier === 'celestia' ? true : await checkIPRateLimit(req, tier);
-  if (!passed) {
-    return new NextResponse(JSON.stringify({ type: 'error', data: 'Rate limit exceeded. Please try again later!' }), {
-      headers: { 'Content-Type': 'text/event-stream' },
-    });
+  if (req.nextUrl.pathname.startsWith('/api') && process.env["CURR_ENV"] === 'PROD') {
+    // Check for access code
+    const tier = checkAccessCode(req);
+    if (!tier) {
+      return new NextResponse(JSON.stringify({ type: 'error', data: 'Please provide a valid access code.' }), {
+        headers: { 'Content-Type': 'text/event-stream' },
+      });
+    }
+
+    // Check for rate limit, or pass if celesia tier
+    const passed = tier === 'celestia' ? true : await checkIPRateLimit(req, tier);
+    if (!passed) {
+      return new NextResponse(JSON.stringify({ type: 'error', data: 'Rate limit exceeded. Please try again later!' }), {
+        headers: { 'Content-Type': 'text/event-stream' },
+      });
+    }
   }
 
   return NextResponse.next();
