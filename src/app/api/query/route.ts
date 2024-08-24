@@ -296,7 +296,7 @@ export async function POST(req: NextRequest) {
         })));
 
         try {
-          await logQA(query, response.toString());
+          await logQA(query, JSON.stringify(response));
         } catch (err : any) {
           console.error('Failed to log Q&A:', err);
         }
