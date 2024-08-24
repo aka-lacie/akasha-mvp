@@ -96,6 +96,7 @@ const AkashaTerminalInterface: React.FC = () => {
         case 'error':
           setQueryStatus('error');
           setErrorMsg(message.data);
+          setData({ type: '', info: [] });
           reader.cancel();
           clearTimeout(heartbeatTimeout);
           

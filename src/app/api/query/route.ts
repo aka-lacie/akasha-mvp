@@ -1,10 +1,12 @@
 import type { NextRequest } from 'next/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { OpenAI } from 'openai';
+import { zodResponseFormat } from 'openai/helpers/zod';
+import { z } from 'zod';
 
 // MODELS
 const EMBEDDING_MODEL = 'text-embedding-ada-002'
-const GPT_MODEL = 'gpt-3.5-turbo-1106'
+const GPT_MODEL = 'gpt-4o-mini'
 
 // CONFIG
 const openai = new OpenAI()
@@ -13,13 +15,28 @@ const supabase_url = process.env["AKASHA_SUPABASE_URL"] || ''
 const supabase_key = process.env["AKASHA_SUPABASE_KEY"] || ''
 const supabaseClient : SupabaseClient = createClient(supabase_url, supabase_key)
 
-const systemPrompt = `You are the Akasha Terminal, a smart answer engine able to access the collective knowledge of Teyvat stored in the Irminsul database. Each piece of provided data may or may not be relevant to the question – discern using your best judgement and refuse questions outside of the scope of your data pertaining to Genshin Impact. Use the data provided by the Irminsul to answer the given question. Answer in exactly TWO parts labeled "Brainstorm:" and "Answer:". Note important info relevant to the question in "Brainstorm" deliminated by dashes (-). Write your conclusion and brief explanation in "Answer", but keep it concise - every word counts. If you cannot determine any answer, it is okay to say so. Format example: \`\`\`Question: "What happened in Scaramouche's past?"
-GPT Response: """Brainstorm:
-- Scaramouche was originally created as a test puppet body by Ei.
-- He settled in Tatarasuna and became close with Katsuragi.
-- Dottore infiltrated Tatarasuna and caused chaos with Crystal Marrow.
--...[rest of brainstorm]
-Answer: Scaramouche was created as a test puppet body by Ei. He settled in Tatarasuna and formed a close relationship with Katsuragi. However, chaos ensued...[rest of answer]"""\`\`\``
+const systemPrompt = `Assistant is the Akasha Terminal, a smart answer engine able to access the collective knowledge of Teyvat stored in the Irminsul database. Each piece of provided data may or may not be relevant to the question – Akasha should discern using best judgement and refuse questions outside of the scope of data pertaining to Genshin Impact. Use the data a previous process of Akasha has returned to answer the given user question. Answer in exactly TWO parts in JSON format: "brainstorm" - list of strings, "answer" - string. Note important info relevant to the question in "brainstorm" as a list of strings. Write conclusion and brief explanation in "answer", but keep it concise - every word counts. If Akasha cannot determine any answer, it should indicate so in "answer". In case of irrelevant queries, leave "answer" blank. Akasha must write in third person with NO reference to self.
+Format example:
+Input: \`\`\`
+Data: """[relevant data]"""
+Question: "What happened in Scaramouche's past?"
+\`\`\`
+Output: \`\`\`
+{
+  "brainstorm": [
+    "Scaramouche was originally created as a test puppet body by Ei.",
+    "He settled in Tatarasuna and became close with Katsuragi.",
+    "Dottore infiltrated Tatarasuna and caused chaos with Crystal Marrow.",
+    "[rest of brainstorm]"
+  ],
+  "answer": "Scaramouche was created as a test puppet body by Ei. He settled in Tatarasuna and formed a close relationship with Katsuragi. However, chaos ensued...[rest of answer]"
+}
+\`\`\``
+
+const BrainstormAndAnswer = z.object({
+  brainstorm: z.array(z.string()),
+  answer: z.string(),
+});
 
 class AkashaError extends Error {
   constructor(message?: string) {
@@ -139,7 +156,7 @@ const generateSnippetsFromRelatedText = (
 // ASK
 // ============================================================
 /**
- * Queries the Irminsul data to answer a given question.
+ * Queries the data to answer a given question.
  * @param query - The question to be answered.
  * @param relatedText - Optional related text. If not provided, runs a semantic search API call.
  * @param _model - Unused parameter.
@@ -156,7 +173,7 @@ const queryMessage = async (
 
   let message = ``;
 
-  message += '\n\nIrminsul data:';
+  message += '\n\nData:';
   for (const [string, _relatedness] of stringsAndRelatednesses) {
     const nextArticle = `\n\n"""\n${string}\n"""`;
     message += nextArticle;
@@ -180,7 +197,7 @@ const ask = async (
   relatedText: [string, number][] | null = null,
   model: string = GPT_MODEL,
   tokenBudget: number = 16385 - 500 - 489
-): Promise<string> => {
+): Promise<{ brainstorm: string[], answer: string }> => {
   try {
     const message = await queryMessage(query, relatedText, model, tokenBudget);
     const messages: { role: "system" | "user"; content: string }[]= [
@@ -194,43 +211,36 @@ const ask = async (
       },
     ];
 
-    const chatCompletion = await openai.chat.completions.create({
+    const chatCompletion = await openai.beta.chat.completions.parse({
       model: model,
       messages: messages,
       temperature: 0,
+      response_format: zodResponseFormat(BrainstormAndAnswer, 'brainstorm_and_answer'),
     });
 
-    return chatCompletion.choices[0].message.content || '';
+    const response = chatCompletion.choices[0].message
+    
+    if (response.refusal) {
+      throw new AkashaError('Query REJECTED. Please try another question.');
+    } else if (response.parsed === null) {
+      throw new AkashaError('Response NULL. Please try again.');
+    } else if (response.parsed.brainstorm.length === 0 || response.parsed.answer === '') {
+      throw new AkashaError('Query REJECTED. Please try another question.');
+    } else {
+      return response.parsed;
+    }
+
   } catch (err : any) {
-    throw new AkashaError(`Error when awaiting OpenAI completion: ${err.message}`);
+    if (err instanceof AkashaError) {
+      throw err; // Re-throw AkashaErrors
+    } else if (err instanceof OpenAI.APIError) {
+      console.error('OpenAI API error:', err);
+    } else {
+      console.error('Unexpected error:', err);
+    }
+    throw new AkashaError('Something broke. Please try again.');
   }
 };
-
-// ============================================================
-// POST-PROCESS ASK RESULTS
-// ============================================================
-/**
- * Parses the response string and returns an array containing the brainstorm and answer.
- * @param response - The response string to be parsed.
- * @returns An array containing the brainstorm and answer.
- */
-const parseResponse = (response: string): string[] => {
-  if (!response.includes('Brainstorm:') || !response.includes('Answer:')) {
-    throw new AkashaError('Akasha was unable to produce a valid answer. Try another question.');
-  }
-  const brainstorm = response.split('Brainstorm:')[1]?.split('Answer:')[0];
-  const answer = response.split('Answer:')[1];
-  return [brainstorm, answer];
-}
-
-/**
- * Parses a brainstorm string into an array of trimmed non-empty lines.
- * @param brainstorm - The brainstorm string to parse.
- * @returns An array of trimmed non-empty lines.
- */
-const parseBrainstorm = (brainstorm: string): string[] => {
-  return brainstorm.split('- ').map((line) => line.trim()).filter((line) => line !== '');
-}
 
 // ============================================================
 // MAIN
@@ -275,24 +285,21 @@ export async function POST(req: NextRequest) {
     
         controller.enqueue(encoder.encode(JSON.stringify({ type: 'snippets', data: snippets })));
     
-        const response = sanitizeText(await ask(query, searchData));
-        
-        if (!response) {
-          throw new AkashaError('No response received.');
-        }
+        const response = await ask(query, searchData);
 
-        const brainstormAndAnswer = parseResponse(response);
-        const brainstormArray = parseBrainstorm(brainstormAndAnswer[0]);
-    
         controller.enqueue(encoder.encode(JSON.stringify({
           type: 'response',
           data: {
-            brainstorm: brainstormArray,
-            answer: brainstormAndAnswer[1],
+            brainstorm: response.brainstorm,
+            answer: response.answer,
           }
         })));
 
-        await logQA(query, response);
+        try {
+          await logQA(query, response.toString());
+        } catch (err : any) {
+          console.error('Failed to log Q&A:', err);
+        }
       } catch (err : any) {
         const errorMessage = err instanceof AkashaError ? err.message : 'An unexpected error occurred.';
         console.error(err);
