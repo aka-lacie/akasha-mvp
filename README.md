@@ -1,4 +1,4 @@
-Source code for [akasha.lacie.ai](https://akasha.lacie.ai)
+Source code for [akasha.lacie.ai](https://akasha.lacie.moe)
 
 <hr>
 
